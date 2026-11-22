@@ -103,7 +103,7 @@ jobs:
     env:
       HAS_GCP_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT != '' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Checkout
         if: env.HAS_GCP_CREDENTIALS == 'true'
         with:
@@ -171,7 +171,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Checkout
 
       - uses: actions/setup-node@v6
@@ -254,7 +254,7 @@ jobs:
     if: "needs.file-changes.outputs.backend == 'true'"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Checkout - Current ref
         with:
           fetch-depth: 0
