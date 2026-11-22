@@ -1,6 +1,6 @@
-# FlowAI Studio ETL Lab
+# FlowAI Studio
 
-FlowAI Studio is a local ETL development app built from Kestra OSS 1.3.48. This repository contains the Vue frontend, the Java workflow engine, the Python gateway and Copilot chat, plus a PostgreSQL-to-Oracle lab with synthetic data.
+FlowAI Studio is a local workflow automation and development application built on Apache-2.0 Kestra OSS 1.3.48. This repository contains the Vue frontend, the Java workflow engine, the Python gateway and Copilot chat, plus a PostgreSQL-to-Oracle lab with synthetic data.
 
 ## Run on a Mac
 
@@ -9,8 +9,8 @@ Install **JDK 25**, **Node.js 22**, and **Python 3.13 or 3.14**. The optional da
 With access to the private GitHub repository, clone its main branch:
 
 ```sh
-git clone --branch main https://github.com/eminegl24/flowai-studio-etl-lab.git
-cd flowai-studio-etl-lab
+git clone --branch main https://github.com/eminegl24/flowai-studio-kestra.git
+cd flowai-studio-kestra
 ./flowai/local.sh setup
 ./flowai/local.sh run
 ```
