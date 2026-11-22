@@ -1,5 +1,7 @@
 # FlowAI Studio
 
+[🇹🇷 Türkçe kullanım kılavuzu](docs/flowai-studio.tr.md) · [🇬🇧 English user guide](docs/flowai-studio.en.md)
+
 FlowAI Studio is a local workflow automation and development application built on Apache-2.0 Kestra OSS 1.3.48. This repository contains the Vue frontend, the Java workflow engine, the Python gateway and Copilot chat, plus a PostgreSQL-to-Oracle lab with synthetic data.
 
 ## Run on a Mac
