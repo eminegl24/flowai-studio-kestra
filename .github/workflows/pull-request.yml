@@ -197,7 +197,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/translations-report"
           printf '{"pr": %s, "fork": %s, "outcome": "%s"}\n' "$PR_NUMBER" "$FORK" "$OUTCOME" > "$RUNNER_TEMP/translations-report/meta.json"
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         name: Upload the translation report
         if: always()
         with:
