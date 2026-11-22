@@ -1,0 +1,90 @@
+name: Pre Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      skip-test:
+        description: 'Skip test'
+        type: choice
+        required: true
+        default: 'false'
+        options:
+          - "true"
+          - "false"
+
+jobs:
+  build-artifacts:
+    name: Build Artifacts
+    uses: kestra-io/actions/.github/workflows/kestra-oss-build-artifacts.yml@main
+    secrets:
+      OTLP_ENDPOINT: ${{ secrets.OTLP_ENDPOINT }}
+      OTLP_HEADERS: ${{ secrets.OTLP_HEADERS }}
+    with:
+      java-version: 25
+
+  check-green-commit:
+    name: Check green commit
+    runs-on: ubuntu-latest
+    permissions:
+      checks: read
+    outputs:
+      already-green: ${{ steps.check.outputs.already-green }}
+    steps:
+      - id: check
+        # on any error already-green stays unset, so the tests run
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          COUNT=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs?per_page=100" --paginate \
+            --jq '.check_runs[] | select(.name == "Backend tests / Backend - Tests" and .conclusion == "success") | .id' | wc -l)
+          echo "Successful 'Backend tests / Backend - Tests' check runs on ${{ github.sha }}: $COUNT"
+          echo "already-green=$([ "$COUNT" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  backend-tests:
+    name: Backend tests
+    uses: kestra-io/actions/.github/workflows/kestra-oss-backend-tests.yml@main
+    needs: [check-green-commit]
+    if: ${{ needs.check-green-commit.outputs.already-green != 'true' && (github.event.inputs.skip-test == 'false' || github.event.inputs.skip-test == '') }}
+    secrets:
+      GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+    with:
+      java-version: 25
+
+  frontend-tests:
+    name: Frontend tests
+    uses: kestra-io/actions/.github/workflows/kestra-oss-frontend-tests.yml@main
+    if: ${{ github.event.inputs.skip-test == 'false' || github.event.inputs.skip-test == '' }}
+    secrets:
+      GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  publish-maven:
+    name: Publish Maven
+    needs: [ backend-tests, frontend-tests ]
+    if: "!failure() && !cancelled()"
+    uses: kestra-io/actions/.github/workflows/kestra-oss-publish-maven.yml@main
+    secrets:
+      SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      SONATYPE_GPG_KEYID: ${{ secrets.SONATYPE_GPG_KEYID }}
+      SONATYPE_GPG_PASSWORD: ${{ secrets.SONATYPE_GPG_PASSWORD }}
+      SONATYPE_GPG_FILE: ${{ secrets.SONATYPE_GPG_FILE }}
+      OTLP_ENDPOINT: ${{ secrets.OTLP_ENDPOINT }}
+      OTLP_HEADERS: ${{ secrets.OTLP_HEADERS }}
+    with:
+      java-version: 25
+
+  publish-github:
+    name: Github Release
+    needs: [build-artifacts, backend-tests, frontend-tests]
+    if: "!failure() && !cancelled()"
+    uses: kestra-io/actions/.github/workflows/kestra-oss-publish-github.yml@main
+    secrets: inherit

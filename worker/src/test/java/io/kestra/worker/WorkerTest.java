@@ -1,0 +1,535 @@
+package io.kestra.worker;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalAnswers;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableMap;
+
+import io.kestra.core.junit.annotations.FlakyTest;
+import io.kestra.core.junit.annotations.KestraTest;
+import io.kestra.core.models.executions.*;
+import io.kestra.core.models.flows.Flow;
+import io.kestra.core.models.flows.State;
+import io.kestra.core.models.property.Property;
+import io.kestra.core.models.tasks.ResolvedTask;
+import io.kestra.core.models.tasks.RunnableTask;
+import io.kestra.core.models.tasks.Task;
+import io.kestra.core.models.tasks.VoidOutput;
+import io.kestra.core.queues.QueueException;
+import io.kestra.core.queues.QueueFactoryInterface;
+import io.kestra.core.queues.QueueInterface;
+import io.kestra.core.runners.*;
+import io.kestra.core.serializers.JacksonMapper;
+import io.kestra.core.storages.StorageInterface;
+import io.kestra.core.utils.Await;
+import io.kestra.core.utils.IdUtils;
+import io.kestra.core.utils.TestsUtils;
+import io.kestra.plugin.core.execution.Fail;
+import io.kestra.plugin.core.flow.Pause;
+import io.kestra.plugin.core.flow.Sleep;
+import io.kestra.plugin.core.flow.WorkingDirectory;
+import io.kestra.storage.local.LocalStorage;
+
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.test.annotation.MockBean;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import reactor.core.publisher.Flux;
+
+import static io.kestra.core.tenant.TenantService.MAIN_TENANT;
+import static io.kestra.core.utils.Rethrow.throwSupplier;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+
+@KestraTest(rebuildContext = true)
+class WorkerTest {
+    @Inject
+    ApplicationContext applicationContext;
+
+    @Inject
+    @Named(QueueFactoryInterface.WORKERJOB_NAMED)
+    QueueInterface<WorkerJob> workerTaskQueue;
+
+    @Inject
+    @Named(QueueFactoryInterface.WORKERTASKRESULT_NAMED)
+    QueueInterface<WorkerTaskResult> workerTaskResultQueue;
+
+    @Inject
+    @Named(QueueFactoryInterface.KILL_NAMED)
+    QueueInterface<ExecutionKilled> executionKilledQueue;
+
+    @Inject
+    @Named(QueueFactoryInterface.WORKERTASKLOG_NAMED)
+    QueueInterface<LogEntry> workerTaskLogQueue;
+
+    @Inject
+    RunContextFactory runContextFactory;
+
+    @Test
+    void success() throws TimeoutException, QueueException {
+        DefaultWorker worker = applicationContext.createBean(DefaultWorker.class, IdUtils.create(), 8, null);
+        worker.run();
+
+        AtomicReference<WorkerTaskResult> workerTaskResult = new AtomicReference<>(null);
+        Flux<WorkerTaskResult> receive = TestsUtils.receive(workerTaskResultQueue, either -> workerTaskResult.set(either.getLeft()));
+
+        workerTaskQueue.emit(workerTask(1000));
+
+        Await.until(
+            () -> workerTaskResult.get() != null && workerTaskResult.get().getTaskRun().getState().isTerminated(),
+            Duration.ofMillis(100),
+            Duration.ofMinutes(1)
+        );
+        receive.blockLast();
+        worker.shutdown();
+
+        assertThat(workerTaskResult.get().getTaskRun().getState().getHistories().size()).isEqualTo(3);
+    }
+
+    @Test
+    void workerGroup() {
+        DefaultWorker worker = applicationContext.createBean(DefaultWorker.class, IdUtils.create(), 8, "toto");
+        assertThat(worker.getWorkerGroup()).isNull();
+    }
+
+    @Test
+    void failOnWorkerTaskWithFlowable() throws TimeoutException, QueueException, JsonProcessingException {
+        DefaultWorker worker = applicationContext.createBean(DefaultWorker.class, IdUtils.create(), 8, null);
+        worker.run();
+
+        AtomicReference<WorkerTaskResult> workerTaskResult = new AtomicReference<>(null);
+        Flux<WorkerTaskResult> receive = TestsUtils.receive(workerTaskResultQueue, either -> workerTaskResult.set(either.getLeft()));
+
+        Pause pause = Pause.builder()
+            .type(Pause.class.getName())
+            .delay(Property.ofValue(Duration.ofSeconds(1)))
+            .id("unit-test")
+            .build();
+
+        WorkingDirectory theWorkerTask = WorkingDirectory.builder()
+            .type(WorkingDirectory.class.getName())
+            .id("worker-unit-test")
+            .tasks(List.of(pause))
+            .build();
+
+        Flow flow = Flow.builder()
+            .id(IdUtils.create())
+            .namespace("io.kestra.unit-test")
+            .tasks(Collections.singletonList(theWorkerTask))
+            .build();
+
+        Execution execution = TestsUtils.mockExecution(flow, ImmutableMap.of());
+
+        ResolvedTask resolvedTask = ResolvedTask.of(pause);
+
+        WorkerTask workerTask = WorkerTask.builder()
+            .runContext(runContextFactory.of(ImmutableMap.of("key", "value")))
+            .task(theWorkerTask)
+            .taskRun(TaskRun.of(execution, resolvedTask))
+            .build();
+
+        workerTaskQueue.emit(workerTask);
+
+        Await.until(
+            throwSupplier(() ->
+            {
+                WorkerTaskResult taskResult = workerTaskResult.get();
+                return "WorkerTaskResult was " + (taskResult == null ? null : JacksonMapper.ofJson().writeValueAsString(taskResult));
+            }),
+            () -> workerTaskResult.get() != null && workerTaskResult.get().getTaskRun().getState().isFailed(),
+            Duration.ofMillis(100),
+            Duration.ofMinutes(1)
+        );
+        receive.blockLast();
+        worker.shutdown();
+
+        assertThat(workerTaskResult.get().getTaskRun().getState().getHistories().size()).isEqualTo(3);
+    }
+
+    @FlakyTest(description = "flaky on CI — release triage 2026-06: intermittent 'Await failed to terminate within PT1M'")
+    @Test
+    void killed() throws InterruptedException, TimeoutException, QueueException {
+        Flux<LogEntry> receiveLogs = TestsUtils.receive(workerTaskLogQueue);
+
+        DefaultWorker worker = applicationContext.createBean(DefaultWorker.class, IdUtils.create(), 8, null);
+        worker.run();
+
+        List<WorkerTaskResult> workerTaskResult = new CopyOnWriteArrayList<>();
+        Flux<WorkerTaskResult> receiveWorkerTaskResults = TestsUtils.receive(workerTaskResultQueue, either -> workerTaskResult.add(either.getLeft()));
+
+        WorkerTask workerTask = workerTask(999000);
+
+        workerTaskQueue.emit(workerTask);
+        workerTaskQueue.emit(workerTask);
+        workerTaskQueue.emit(workerTask);
+        workerTaskQueue.emit(workerTask);
+
+        WorkerTask notKilled = workerTask(2000);
+        workerTaskQueue.emit(notKilled);
+
+        // Wait for the kill target to emit RUNNING state before sending the kill.
+        // Thread.sleep(500) was not sufficient on slow CI runners, causing the kill to
+        // arrive before the RUNNING transition and producing [CREATED, KILLED] instead of
+        // [CREATED, RUNNING, KILLED].
+        Await.until(
+            () -> workerTaskResult.stream().anyMatch(
+                r -> r.getTaskRun().getExecutionId().equals(workerTask.getTaskRun().getExecutionId())
+                    && r.getTaskRun().getState().getCurrent() == State.Type.RUNNING
+            ),
+            Duration.ofMillis(100),
+            Duration.ofSeconds(30)
+        );
+
+        executionKilledQueue.emit(ExecutionKilledExecution.builder().executionId(workerTask.getTaskRun().getExecutionId()).build());
+
+        Await.until(
+            () ->
+            {
+                // copy the list to avoid concurrent modification exception if a WorkerTaskResult arrives in the queue
+                var copy = new ArrayList<>(workerTaskResult);
+                return copy.stream().filter(r -> r.getTaskRun().getState().isTerminated()).count() == 5;
+            },
+            Duration.ofMillis(100),
+            Duration.ofMinutes(1)
+        );
+        receiveWorkerTaskResults.blockLast();
+
+        WorkerTaskResult oneKilled = workerTaskResult.stream()
+            .filter(r -> r.getTaskRun().getState().getCurrent() == State.Type.KILLED)
+            .findFirst()
+            .orElseThrow();
+        assertThat(oneKilled.getTaskRun().getState().getHistories().size()).isEqualTo(3);
+        assertThat(oneKilled.getTaskRun().getState().getCurrent()).isEqualTo(State.Type.KILLED);
+
+        WorkerTaskResult oneNotKilled = workerTaskResult.stream()
+            .filter(r -> r.getTaskRun().getState().getCurrent() == State.Type.SUCCESS)
+            .findFirst()
+            .orElseThrow();
+        assertThat(oneNotKilled.getTaskRun().getState().getHistories().size()).isEqualTo(3);
+        assertThat(oneNotKilled.getTaskRun().getState().getCurrent()).isEqualTo(State.Type.SUCCESS);
+
+        // child process is stopped and we never received 3 logs
+        Thread.sleep(1000);
+        worker.shutdown();
+        assertThat(receiveLogs.toStream().filter(logEntry -> logEntry.getMessage().equals("3")).count()).isEqualTo(0L);
+    }
+
+    @Test
+    void shouldCreateInstanceGivenApplicationContext() {
+        Assertions.assertDoesNotThrow(() ->
+        {
+            try (var worker = applicationContext.createBean(TestMethodScopedWorker.class, IdUtils.create(), 8, null)) {
+                // do nothing
+            }
+        });
+
+    }
+
+    @Test
+    void timeout() throws TimeoutException, QueueException {
+        DefaultWorker worker = applicationContext.createBean(DefaultWorker.class, IdUtils.create(), 8, null);
+        worker.run();
+
+        List<WorkerTaskResult> workerTaskResults = new CopyOnWriteArrayList<>();
+        Flux<WorkerTaskResult> receive = TestsUtils.receive(workerTaskResultQueue, either -> workerTaskResults.add(either.getLeft()));
+
+        Sleep task = Sleep.builder()
+            .type(Sleep.class.getName())
+            .id("timeout-test")
+            .duration(Property.ofValue(Duration.ofSeconds(60)))
+            .timeout(Property.ofValue(Duration.ofSeconds(1)))
+            .build();
+
+        Flow flow = Flow.builder()
+            .id(IdUtils.create())
+            .namespace("io.kestra.unit-test")
+            .tasks(Collections.singletonList(task))
+            .build();
+
+        Execution execution = TestsUtils.mockExecution(flow, ImmutableMap.of());
+        ResolvedTask resolvedTask = ResolvedTask.of(task);
+        String executionId = execution.getId();
+
+        WorkerTask workerTask = WorkerTask.builder()
+            .runContext(runContextFactory.of(ImmutableMap.of("key", "value")))
+            .task(task)
+            .taskRun(TaskRun.of(execution, resolvedTask))
+            .build();
+
+        workerTaskQueue.emit(workerTask);
+
+        Await.until(
+            () -> workerTaskResults.stream()
+                .anyMatch(r -> r.getTaskRun().getExecutionId().equals(executionId) && r.getTaskRun().getState().isTerminated()),
+            Duration.ofMillis(100),
+            Duration.ofMinutes(1)
+        );
+        receive.blockLast();
+        worker.shutdown();
+
+        WorkerTaskResult result = workerTaskResults.stream()
+            .filter(r -> r.getTaskRun().getExecutionId().equals(executionId) && r.getTaskRun().getState().isTerminated())
+            .findFirst()
+            .orElseThrow();
+        assertThat(result.getTaskRun().getState().getCurrent()).isEqualTo(State.Type.FAILED);
+    }
+
+    @Test
+    void shouldEmitFailedResultWhenTaskFailsOnItsOwnDuringShutdownDrain() throws Exception {
+        // Given: shutdown=true (drain window active) but shutdownInterrupted=false (grace period not elapsed)
+        DefaultWorker worker = applicationContext.createBean(DefaultWorker.class, IdUtils.create(), 8, null);
+        setWorkerFlag(worker, "shutdown", true);
+        setWorkerFlag(worker, "shutdownInterrupted", false);
+
+        List<WorkerTaskResult> results = new CopyOnWriteArrayList<>();
+        Flux<WorkerTaskResult> receive = TestsUtils.receive(workerTaskResultQueue, either -> results.add(either.getLeft()));
+
+        // When: run a task that fails on its own (not interrupted by the worker)
+        invokeRun(worker, failWorkerTask());
+
+        // Then: result must be emitted — the genuine failure must not be swallowed (regression for #17124)
+        Await.until(
+            () -> results.stream().anyMatch(r -> r.getTaskRun().getState().isFailed()),
+            Duration.ofMillis(100),
+            Duration.ofSeconds(10)
+        );
+        assertThat(results).anyMatch(r -> r.getTaskRun().getState().isFailed());
+        receive.blockLast(Duration.ofSeconds(1));
+    }
+
+    @Test
+    void shouldDropFailedResultWhenTaskWasInterruptedByShutdown() throws Exception {
+        // Given: shutdown=true AND shutdownInterrupted=true (grace period elapsed, worker forcibly interrupted)
+        DefaultWorker worker = applicationContext.createBean(DefaultWorker.class, IdUtils.create(), 8, null);
+        setWorkerFlag(worker, "shutdown", true);
+        setWorkerFlag(worker, "shutdownInterrupted", true);
+
+        List<WorkerTaskResult> results = new CopyOnWriteArrayList<>();
+        Flux<WorkerTaskResult> receive = TestsUtils.receive(workerTaskResultQueue, either -> results.add(either.getLeft()));
+
+        // When: run a task that ends in FAILED state (because it was interrupted by the forced shutdown)
+        invokeRun(worker, failWorkerTask());
+
+        // Then: result must NOT be emitted — the executor will resubmit the task
+        // (all results except the RUNNING interim emit come from run(); RUNNING emits before the shutdown check)
+        Thread.sleep(200);
+        assertThat(results).noneMatch(r -> r.getTaskRun().getState().isFailed());
+        receive.blockLast(Duration.ofSeconds(1));
+    }
+
+    /**
+     * The local internal storage, except that, like the S3 SDK, an upload made on an interrupted thread is aborted.
+     * Behaves exactly as the local storage for every test that does not interrupt the worker thread.
+     */
+    @MockBean(StorageInterface.class)
+    StorageInterface interruptSensitiveStorage() throws IOException {
+        LocalStorage localStorage = new LocalStorage();
+        localStorage.setBasePath(Path.of("/tmp/unittest"));
+        localStorage.init();
+
+        StorageInterface storage = mock(StorageInterface.class, AdditionalAnswers.delegatesTo(localStorage));
+        doAnswer(invocation ->
+        {
+            if (Thread.currentThread().isInterrupted()) {
+                // mirrors the S3 SDK's AbortedException, caused by an SdkInterruptedException
+                throw new RuntimeException("Thread was interrupted", new InterruptedException());
+            }
+            return localStorage.put(invocation.getArgument(0), invocation.getArgument(1), invocation.getArgument(2), invocation.<InputStream> getArgument(3));
+        }).when(storage).put(any(), any(), any(URI.class), any(InputStream.class));
+        return storage;
+    }
+
+    @Test
+    void shouldKeepLogFileAndNotLeakInterruptWhenKilledTaskRestoresInterruptFlag() throws Exception {
+        // Given a running logToFile task that, like the Docker task runner, restores the interrupt flag once killed
+        DefaultWorker worker = applicationContext.createBean(DefaultWorker.class, IdUtils.create(), 8, null);
+        worker.run();
+
+        List<WorkerTaskResult> results = new CopyOnWriteArrayList<>();
+        Flux<WorkerTaskResult> receive = TestsUtils.receive(workerTaskResultQueue, either -> results.add(either.getLeft()));
+
+        WorkerTask workerTask = blockUntilInterruptedWorkerTask();
+        BlockUntilInterrupted.started = new CountDownLatch(1);
+
+        AtomicReference<Throwable> uncaught = new AtomicReference<>();
+        AtomicBoolean interruptedAfterRun = new AtomicBoolean();
+        Thread workerThread = new Thread(() ->
+        {
+            try {
+                invokeRun(worker, workerTask);
+            } catch (InvocationTargetException e) {
+                uncaught.set(e.getCause());
+            } catch (Exception e) {
+                uncaught.set(e);
+            }
+            interruptedAfterRun.set(Thread.currentThread().isInterrupted());
+        }, "worker-under-test");
+        workerThread.start();
+        assertThat(BlockUntilInterrupted.started.await(30, TimeUnit.SECONDS)).isTrue();
+
+        // When the execution is killed while the task is running
+        executionKilledQueue.emit(
+            ExecutionKilledExecution.builder()
+                .tenantId(workerTask.getTaskRun().getTenantId())
+                .executionId(workerTask.getTaskRun().getExecutionId())
+                .build()
+        );
+        workerThread.join(Duration.ofSeconds(30).toMillis());
+
+        // Then no exception escapes to the worker thread (which would shut the worker down), the KILLED result is
+        // emitted with its log file, and the interrupt does not leak
+        assertThat(workerThread.isAlive()).isFalse();
+        assertThat(uncaught.get()).as("no exception may reach the worker thread's uncaught exception handler").isNull();
+        Await.until(
+            () -> results.stream().anyMatch(r -> r.getTaskRun().getState().getCurrent() == State.Type.KILLED),
+            Duration.ofMillis(100),
+            Duration.ofSeconds(10)
+        );
+        TaskRun taskRun = results.stream()
+            .filter(r -> r.getTaskRun().getState().getCurrent() == State.Type.KILLED)
+            .findFirst()
+            .orElseThrow()
+            .getTaskRun();
+        assertThat(taskRun.lastAttempt().getLogFile())
+            .as("the killed task's logs only exist in its log file, which must still be uploaded")
+            .isNotNull();
+        assertThat(interruptedAfterRun.get())
+            .as("the kill interrupt is meant for the task and must not leak to the post-task steps")
+            .isFalse();
+
+        receive.blockLast(Duration.ofSeconds(1));
+        worker.shutdown();
+    }
+
+    private void setWorkerFlag(DefaultWorker worker, String fieldName, boolean value) throws Exception {
+        Field field = DefaultWorker.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        ((AtomicBoolean) field.get(worker)).set(value);
+    }
+
+    private void invokeRun(DefaultWorker worker, WorkerTask workerTask) throws Exception {
+        Method runMethod = DefaultWorker.class.getDeclaredMethod("run", WorkerTask.class, Boolean.class);
+        runMethod.setAccessible(true);
+        runMethod.invoke(worker, workerTask, false);
+    }
+
+    private WorkerTask failWorkerTask() {
+        Fail task = Fail.builder()
+            .type(Fail.class.getName())
+            .id("drain-fail-test")
+            .build();
+
+        Flow flow = Flow.builder()
+            .id(IdUtils.create())
+            .namespace("io.kestra.unit-test")
+            .tasks(Collections.singletonList(task))
+            .build();
+
+        Execution execution = TestsUtils.mockExecution(flow, ImmutableMap.of());
+        ResolvedTask resolvedTask = ResolvedTask.of(task);
+
+        return WorkerTask.builder()
+            .runContext(runContextFactory.of(ImmutableMap.of("key", "value")))
+            .task(task)
+            .taskRun(TaskRun.of(execution, resolvedTask))
+            .build();
+    }
+
+    private WorkerTask blockUntilInterruptedWorkerTask() {
+        BlockUntilInterrupted task = BlockUntilInterrupted.builder()
+            .type(BlockUntilInterrupted.class.getName())
+            .id("block-until-interrupted")
+            .logToFile(true)
+            .build();
+
+        Flow flow = Flow.builder()
+            // a tenant is needed to upload the log file to the internal storage
+            .tenantId(MAIN_TENANT)
+            .id(IdUtils.create())
+            .namespace("io.kestra.unit-test")
+            .tasks(Collections.singletonList(task))
+            .build();
+
+        Execution execution = TestsUtils.mockExecution(flow, ImmutableMap.of());
+        ResolvedTask resolvedTask = ResolvedTask.of(task);
+
+        return WorkerTask.builder()
+            .runContext(runContextFactory.of(ImmutableMap.of("key", "value")))
+            .task(task)
+            .taskRun(TaskRun.of(execution, resolvedTask))
+            .build();
+    }
+
+    private WorkerTask workerTask(long sleepDuration) {
+        Sleep bash = Sleep.builder()
+            .type(Sleep.class.getName())
+            .id("unit-test")
+            .duration(Property.ofValue(Duration.ofMillis(sleepDuration)))
+            .build();
+
+        Flow flow = Flow.builder()
+            .id(IdUtils.create())
+            .namespace("io.kestra.unit-test")
+            .tasks(Collections.singletonList(bash))
+            .build();
+
+        Execution execution = TestsUtils.mockExecution(flow, ImmutableMap.of());
+
+        ResolvedTask resolvedTask = ResolvedTask.of(bash);
+
+        return WorkerTask.builder()
+            .runContext(runContextFactory.of(ImmutableMap.of("key", "value")))
+            .task(bash)
+            .taskRun(TaskRun.of(execution, resolvedTask))
+            .build();
+    }
+
+    /**
+     * A task that logs then blocks until interrupted, and restores the interrupt flag on its way out as a well-behaved
+     * plugin does (e.g. the Docker task runner after its container cleanup).
+     */
+    @SuperBuilder
+    @Getter
+    @NoArgsConstructor
+    public static class BlockUntilInterrupted extends Task implements RunnableTask<VoidOutput> {
+        static volatile CountDownLatch started;
+
+        @Override
+        public VoidOutput run(RunContext runContext) {
+            runContext.logger().info("waiting to be killed");
+            started.countDown();
+            try {
+                Thread.sleep(Duration.ofMinutes(5));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("interrupted", e);
+            }
+            return null;
+        }
+    }
+}

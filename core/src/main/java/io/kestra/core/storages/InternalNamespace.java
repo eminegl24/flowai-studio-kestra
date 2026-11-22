@@ -1,0 +1,656 @@
+package io.kestra.core.storages;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+
+import io.kestra.core.exceptions.ConflictException;
+import io.kestra.core.models.FetchVersion;
+import io.kestra.core.models.QueryFilter;
+import io.kestra.core.models.namespaces.files.NamespaceFileMetadata;
+import io.kestra.core.repositories.ArrayListTotal;
+import io.kestra.core.repositories.NamespaceFileMetadataRepositoryInterface;
+
+import io.micronaut.data.model.Pageable;
+import jakarta.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
+
+import static io.kestra.core.utils.Rethrow.throwConsumer;
+import static io.kestra.core.utils.Rethrow.throwFunction;
+
+/**
+ * The default {@link Namespace} implementation.
+ * This class acts as a facade to the {@link StorageInterface} for manipulating namespace files.
+ *
+ * @see Storage#namespace()
+ * @see Storage#namespace(String)
+ */
+@Slf4j
+public class InternalNamespace implements Namespace {
+
+    private final String namespace;
+    private final String tenant;
+    private final StorageInterface storage;
+    private final NamespaceFileMetadataRepositoryInterface namespaceFileMetadataRepository;
+    private final Logger logger;
+
+    /**
+     * Creates a new {@link InternalNamespace} instance.
+     *
+     * @param namespace The namespace
+     * @param storage The storage.
+     */
+    public InternalNamespace(@Nullable final String tenant, final String namespace, final StorageInterface storage,
+        final NamespaceFileMetadataRepositoryInterface namespaceFileMetadataRepository) {
+        this(log, tenant, namespace, storage, namespaceFileMetadataRepository);
+    }
+
+    /**
+     * Creates a new {@link InternalNamespace} instance.
+     *
+     * @param logger The logger to be used by this class.
+     * @param namespace The namespace
+     * @param tenant The tenant.
+     * @param storage The storage.
+     */
+    public InternalNamespace(final Logger logger, @Nullable final String tenant, final String namespace, final StorageInterface storage,
+        final NamespaceFileMetadataRepositoryInterface namespaceFileMetadataRepositoryInterface) {
+        this.logger = Objects.requireNonNull(logger, "logger cannot be null");
+        this.namespace = Objects.requireNonNull(namespace, "namespace cannot be null");
+        this.storage = Objects.requireNonNull(storage, "storage cannot be null");
+        this.namespaceFileMetadataRepository = Objects.requireNonNull(namespaceFileMetadataRepositoryInterface, "namespaceFileMetadataRepository cannot be null");
+        this.tenant = tenant;
+    }
+
+    @Override
+    public ArrayListTotal<NamespaceFile> find(Pageable pageable, List<QueryFilter> filters, boolean allowDeleted, FetchVersion fetchVersion) {
+        return namespaceFileMetadataRepository.find(
+            pageable,
+            tenant,
+            Stream.concat(
+                filters.stream(), Stream.of(
+                    QueryFilter.builder().field(QueryFilter.Field.NAMESPACE).operation(QueryFilter.Op.EQUALS).value(namespace).build()
+                )
+            ).toList(),
+            allowDeleted,
+            fetchVersion
+        ).map(throwFunction(NamespaceFile::fromMetadata));
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public String namespace() {
+        return namespace;
+    }
+
+    @Override
+    public String tenantId() {
+        return tenant;
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public List<NamespaceFile> all() throws IOException {
+        return all(null);
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public List<NamespaceFile> all(final String containing, boolean includeDirectories) throws IOException {
+        List<NamespaceFileMetadata> namespaceFilesMetadata = namespaceFileMetadataRepository.find(
+            Pageable.UNPAGED, tenant, Stream.concat(
+                Stream.of(QueryFilter.builder().field(QueryFilter.Field.NAMESPACE).operation(QueryFilter.Op.EQUALS).value(namespace).build()),
+                Optional.ofNullable(containing).flatMap(p ->
+                {
+                    if (p.equals("/")) {
+                        return Optional.empty();
+                    }
+
+                    return Optional.of(QueryFilter.builder().field(QueryFilter.Field.QUERY).operation(QueryFilter.Op.EQUALS).value(p).build());
+                }).stream()
+            ).toList(), false
+        );
+
+        if (!includeDirectories) {
+            namespaceFilesMetadata = namespaceFilesMetadata.stream().filter(nsFileMetadata -> !nsFileMetadata.isDirectory()).toList();
+        }
+
+        return namespaceFilesMetadata.stream().filter(nsFileMetadata -> !nsFileMetadata.getPath().equals("/"))
+            .map(nsFileMetadata -> NamespaceFile.of(namespace, Path.of(nsFileMetadata.getPath()), nsFileMetadata.getVersion())).toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public List<NamespaceFileMetadata> children(String parentPath, boolean recursive) throws IOException {
+        final String normalizedParentPath = NamespaceFile.normalize(Path.of(parentPath)).toString();
+
+        return namespaceFileMetadataRepository.find(
+            Pageable.UNPAGED, tenant, List.of(
+                QueryFilter.builder().field(QueryFilter.Field.NAMESPACE).operation(QueryFilter.Op.EQUALS).value(namespace).build(),
+                QueryFilter.builder()
+                    .field(QueryFilter.Field.PARENT_PATH)
+                    .operation(recursive ? QueryFilter.Op.STARTS_WITH : QueryFilter.Op.EQUALS)
+                    .value(normalizedParentPath.endsWith("/") ? normalizedParentPath : normalizedParentPath + "/")
+                    .build()
+            ), false
+        );
+    }
+
+    @Override
+    public List<Pair<NamespaceFile, NamespaceFile>> move(Path source, Path target) throws Exception {
+        final Path normalizedSource = NamespaceFile.normalize(source);
+        final Path normalizedTarget = NamespaceFile.normalize(target);
+
+        if (exists(normalizedTarget)) {
+            throw new IOException(
+                String.format(
+                    "File '%s' already exists in namespace '%s'.",
+                    normalizedTarget,
+                    namespace
+                )
+            );
+        }
+
+        // Get all metadata for source and its descendants, all versions
+        List<NamespaceFileMetadata> sourceMetas = withoutVersionsUpToDeletion(
+            namespaceFileMetadataRepository.find(
+                Pageable.UNPAGED, tenant, List.of(
+                    QueryFilter.builder().field(QueryFilter.Field.NAMESPACE).operation(QueryFilter.Op.EQUALS).value(namespace).build(),
+                    QueryFilter.builder().field(QueryFilter.Field.PATH).operation(QueryFilter.Op.IN).value(List.of(normalizedSource.toString(), normalizedSource + "/")).build()
+                ), true, FetchVersion.ALL
+            )
+        );
+
+        List<NamespaceFileMetadata> allMetas = new ArrayList<>(sourceMetas);
+        boolean isDirectory = sourceMetas.stream().anyMatch(NamespaceFileMetadata::isDirectory);
+        if (isDirectory) {
+            String parentPathPrefix = normalizedSource.toString().endsWith("/") ? normalizedSource.toString() : normalizedSource + "/";
+            ArrayListTotal<NamespaceFileMetadata> descendants = namespaceFileMetadataRepository.find(
+                Pageable.UNPAGED, tenant, List.of(
+                    QueryFilter.builder().field(QueryFilter.Field.NAMESPACE).operation(QueryFilter.Op.EQUALS).value(namespace).build(),
+                    QueryFilter.builder().field(QueryFilter.Field.PARENT_PATH).operation(QueryFilter.Op.STARTS_WITH).value(parentPathPrefix).build()
+                ), true, FetchVersion.ALL
+            );
+            allMetas.addAll(descendants);
+        }
+
+        allMetas.sort(Comparator.comparing(NamespaceFileMetadata::getVersion));
+
+        // Phase 1: Copy all entries to their new locations, tracking what was created for rollback
+        List<Pair<NamespaceFile, NamespaceFile>> results = new ArrayList<>();
+        try {
+            for (NamespaceFileMetadata nsFileMetadata : allMetas) {
+                String oldPath = nsFileMetadata.getPath();
+                String relativePart = "";
+                if (oldPath.startsWith(normalizedSource.toString())) {
+                    relativePart = oldPath.substring(normalizedSource.toString().length());
+                }
+                String intermediateNewPath = normalizedTarget.toString() + relativePart;
+                if (nsFileMetadata.isDirectory() && !intermediateNewPath.endsWith("/")) {
+                    intermediateNewPath += "/";
+                }
+                final String finalNewPath = intermediateNewPath;
+
+                NamespaceFile beforeNamespaceFile = NamespaceFile.of(namespace, Path.of(oldPath), nsFileMetadata.getVersion());
+                NamespaceFile afterNamespaceFile;
+
+                if (nsFileMetadata.isDirectory()) {
+                    afterNamespaceFile = this.createDirectory(Path.of(finalNewPath));
+                } else {
+                    try (InputStream oldContent = storage.get(tenant, namespace, beforeNamespaceFile.storagePath().toUri())) {
+                        List<NamespaceFile> putResult = this.putFile(Path.of(finalNewPath), oldContent, Conflicts.OVERWRITE);
+                        afterNamespaceFile = putResult.stream().filter(f -> f.path().equals(finalNewPath)).findFirst().orElse(putResult.get(putResult.size() - 1));
+                    }
+                }
+
+                results.add(Pair.of(beforeNamespaceFile, afterNamespaceFile));
+            }
+        } catch (Exception e) {
+            // Rollback: purge all already-created target entries (longest paths first to handle children before parents)
+            logger.warn(
+                "Move from '{}' to '{}' failed after creating {} of {} entries, rolling back.",
+                normalizedSource, normalizedTarget, results.size(), allMetas.size(), e
+            );
+            results.stream()
+                .sorted(Comparator.comparing((Pair<NamespaceFile, NamespaceFile> p) -> p.getRight().path().length()).reversed())
+                .forEach(pair ->
+                {
+                    try {
+                        this.purge(pair.getRight());
+                    } catch (IOException rollbackEx) {
+                        logger.error("Failed to rollback created file '{}' during move rollback.", pair.getRight().path(), rollbackEx);
+                    }
+                });
+            throw new IOException(
+                String.format(
+                    "Failed to move '%s' to '%s' in namespace '%s'. All changes have been rolled back.",
+                    normalizedSource, normalizedTarget, namespace
+                ), e
+            );
+        }
+
+        // Phase 2: All copies succeeded — now purge the source entries
+        results.stream()
+            .sorted(Comparator.comparing((Pair<NamespaceFile, NamespaceFile> p) -> p.getLeft().path().length()).reversed())
+            .forEach(throwConsumer(pair -> this.purge(pair.getLeft())));
+
+        return results;
+    }
+
+    /**
+     * Drops the entries whose version is at or below the most recent deletion of their own path.
+     * <p>
+     * Copying an entry to another path makes it live again there, under a destination that carries no
+     * deletion of its own. The versions a deletion covers must therefore not travel with a move, or
+     * renaming a path would serve and list content that was deleted at it.
+     *
+     * @param entries Entries of one or more paths, in any order.
+     * @return Those entries that postdate the most recent deletion of their path.
+     * @see NamespaceFileMetadata#deletedFloor(Collection)
+     */
+    private static List<NamespaceFileMetadata> withoutVersionsUpToDeletion(List<NamespaceFileMetadata> entries) {
+        Map<String, Integer> deletedFloors = entries.stream()
+            .collect(
+                Collectors.groupingBy(
+                    NamespaceFileMetadata::getPath,
+                    Collectors.collectingAndThen(Collectors.toList(), NamespaceFileMetadata::deletedFloor)
+                )
+            );
+
+        return entries.stream()
+            .filter(entry -> entry.getVersion() > deletedFloors.get(entry.getPath()))
+            .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public NamespaceFile get(Path path) throws IOException {
+        final Path normalizedPath = NamespaceFile.normalize(path);
+        Optional<NamespaceFileMetadata> metadata = findByPath(normalizedPath, true);
+
+        if (metadata.map(NamespaceFileMetadata::isDeleted).orElse(false)) {
+            // A path that has never held a file still resolves, which is what callers building the URI of a
+            // file still to be written rely on. A deleted one must not: its versions are backed by objects
+            // that are still in storage, so resolving to one hands back content the file no longer has.
+            throw fileNotFound(normalizedPath, null);
+        }
+
+        int version = metadata.map(NamespaceFileMetadata::getVersion).orElse(1);
+
+        return NamespaceFile.of(namespace, normalizedPath, version);
+    }
+
+    public Path relativize(final URI uri) {
+        return NamespaceFile.of(namespace)
+            .storagePath()
+            .relativize(Path.of(uri.getPath()));
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public List<NamespaceFile> findAllFilesMatching(final Predicate<Path> predicate) throws IOException {
+        return all().stream().filter(it -> predicate.test(it.filePath())).toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public InputStream getFileContent(Path path, @Nullable Integer version) throws IOException {
+        final Path normalizedPath = NamespaceFile.normalize(path);
+
+        if (version != null && version <= deletedFloor(normalizedPath)) {
+            throw fileNotFound(normalizedPath, version);
+        }
+
+        // Throw if file not found OR if it's deleted
+        NamespaceFileMetadata namespaceFileMetadata = findByPath(normalizedPath, version).orElseThrow(() -> fileNotFound(normalizedPath, version));
+
+        return storage.get(tenant, namespace, resolveExistingRevisionUri(normalizedPath, namespaceFileMetadata.getVersion()));
+    }
+
+    /**
+     * Returns the highest version of the given path that has been deleted, or {@code 0} when none has.
+     *
+     * @see NamespaceFileMetadata#deletedFloor(Collection)
+     */
+    private int deletedFloor(Path normalizedPath) {
+        return NamespaceFileMetadata.deletedFloor(
+            namespaceFileMetadataRepository.find(
+                Pageable.UNPAGED, tenant, List.of(
+                    QueryFilter.builder().field(QueryFilter.Field.NAMESPACE).operation(QueryFilter.Op.EQUALS).value(namespace).build(),
+                    QueryFilter.builder().field(QueryFilter.Field.PATH).operation(QueryFilter.Op.EQUALS).value(normalizedPath.toString()).build()
+                ), true, FetchVersion.ALL
+            )
+        );
+    }
+
+    /**
+     * Resolves the storage URI for the given revision of a namespace file, falling back to the most
+     * recent lower revision whose object still exists when the metadata index and the storage have
+     * drifted. This keeps reads resilient to an index entry pointing at a revision whose object was
+     * removed out-of-band (e.g. an object deleted/replaced directly, or a migration that left the
+     * index ahead of storage), serving the latest available revision instead of failing with a 404.
+     *
+     * @throws FileNotFoundException if no revision down to the first has a backing object in storage.
+     */
+    private URI resolveExistingRevisionUri(Path normalizedPath, int revision) throws IOException {
+        for (int candidate = revision; candidate >= 1; candidate--) {
+            URI uri = NamespaceFile.of(namespace, normalizedPath, candidate).storagePath().toUri();
+            if (storage.exists(tenant, namespace, uri)) {
+                if (candidate != revision) {
+                    logger.warn(
+                        "Namespace file '{}' revision {} is missing from storage in namespace '{}' (metadata/storage drift); serving the latest available revision {} instead.",
+                        normalizedPath, revision, namespace, candidate
+                    );
+                }
+                return uri;
+            }
+        }
+        throw fileNotFound(normalizedPath, revision);
+    }
+
+    @Override
+    public FileAttributes getFileMetadata(Path path) throws IOException {
+        final Path normalizedPath = NamespaceFile.normalize(path);
+
+        return findByPath(normalizedPath).map(NamespaceFileAttributes::new).orElseThrow(() -> fileNotFound(normalizedPath, null));
+    }
+
+    private FileNotFoundException fileNotFound(Path path, @Nullable Integer version) {
+        return new FileNotFoundException(Optional.ofNullable(version).map(v -> "Version " + v + " of file").orElse("File") + " '" + path + "' was not found in namespace '" + namespace + "'.");
+    }
+
+    private Optional<NamespaceFileMetadata> findByPath(Path path, boolean allowDeleted, @Nullable Integer version) throws IOException {
+        final Path normalizedPath = NamespaceFile.normalize(path);
+
+        if (version != null) {
+            return namespaceFileMetadataRepository.find(
+                Pageable.from(1, 1), tenant, List.of(
+                    QueryFilter.builder().field(QueryFilter.Field.NAMESPACE).operation(QueryFilter.Op.EQUALS).value(namespace).build(),
+                    QueryFilter.builder().field(QueryFilter.Field.PATH).operation(QueryFilter.Op.EQUALS).value(normalizedPath.toString()).build(),
+                    QueryFilter.builder().field(QueryFilter.Field.VERSION).operation(QueryFilter.Op.EQUALS).value(version).build()
+                ), allowDeleted, FetchVersion.ALL
+            ).stream().findFirst();
+        }
+        return namespaceFileMetadataRepository.findByPath(tenant, namespace, normalizedPath.toString())
+            .filter(namespaceFileMetadata -> allowDeleted || !namespaceFileMetadata.isDeleted());
+    }
+
+    private Optional<NamespaceFileMetadata> findByPath(Path path, boolean allowDeleted) throws IOException {
+        return findByPath(path, allowDeleted, null);
+    }
+
+    private Optional<NamespaceFileMetadata> findByPath(Path path, @Nullable Integer version) throws IOException {
+        return findByPath(path, false, version);
+    }
+
+    private Optional<NamespaceFileMetadata> findByPath(Path path) throws IOException {
+        return findByPath(path, null);
+    }
+
+    @Override
+    public boolean exists(Path path) throws IOException {
+        final Path normalizedPath = NamespaceFile.normalize(path);
+
+        return findByPath(normalizedPath).isPresent();
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public List<NamespaceFile> putFile(final Path path, final InputStream content, final Conflicts onAlreadyExist) throws IOException, URISyntaxException {
+        final Path normalizedPath = NamespaceFile.normalize(path);
+
+        Optional<NamespaceFileMetadata> inRepository = discardConflictingEntry(findByPath(normalizedPath, true), false, normalizedPath);
+        int currentVersion = inRepository.map(NamespaceFileMetadata::getVersion).orElse(0);
+        NamespaceFile namespaceFile = NamespaceFile.of(namespace, normalizedPath, currentVersion + 1);
+        Path storagePath = namespaceFile.storagePath();
+        // Remove Windows letter
+        URI cleanUri = new URI(storagePath.toUri().toString().replaceFirst("^file:///[a-zA-Z]:", ""));
+
+        List<NamespaceFile> createdFiles = new ArrayList<>();
+        if (inRepository.isEmpty()) {
+            storage.put(tenant, namespace, cleanUri, content);
+
+            createdFiles.addAll(mkDirs(normalizedPath.toString()));
+
+            namespaceFileMetadataRepository.save(
+                NamespaceFileMetadata.builder()
+                    .tenantId(tenant)
+                    .namespace(namespace)
+                    .path(normalizedPath.toString())
+                    .size(storage.getAttributes(tenant, namespace, cleanUri).getSize())
+                    .build()
+            );
+
+            logger.debug(
+                String.format(
+                    "File '%s' added to namespace '%s'.",
+                    normalizedPath,
+                    namespace
+                )
+            );
+
+            createdFiles.add(namespaceFile);
+        } else if (onAlreadyExist == Conflicts.OVERWRITE || inRepository.get().isDeleted()) {
+            storage.put(tenant, namespace, cleanUri, content);
+
+            createdFiles.addAll(mkDirs(normalizedPath.toString()));
+
+            namespaceFileMetadataRepository.save(
+                inRepository.get().toBuilder().size(storage.getAttributes(tenant, namespace, cleanUri).getSize()).deleted(false).build()
+            );
+
+            if (inRepository.get().isDeleted()) {
+                logger.debug(
+                    String.format(
+                        "File '%s' added to namespace '%s'.",
+                        normalizedPath,
+                        namespace
+                    )
+                );
+            } else {
+                logger.debug(
+                    String.format(
+                        "File '%s' overwritten into namespace '%s'.",
+                        normalizedPath,
+                        namespace
+                    )
+                );
+            }
+
+            createdFiles.add(namespaceFile);
+        } else {
+            // At this point, the file exists and we have to decide what to do based on the conflict strategy
+            switch (onAlreadyExist) {
+                case ERROR -> throw new IOException(
+                    String.format(
+                        "File '%s' already exists in namespace '%s' and conflict is set to %s",
+                        normalizedPath,
+                        namespace,
+                        Conflicts.ERROR
+                    )
+                );
+                case SKIP -> logger.debug(
+                    String.format(
+                        "File '%s' already exists in namespace '%s' and conflict is set to %s. Skipping.",
+                        normalizedPath,
+                        namespace,
+                        Conflicts.SKIP
+                    )
+                );
+            }
+        }
+
+        return createdFiles;
+    }
+
+    /**
+     * Discards an entry returned by a path lookup when it is not of the expected kind.
+     * <p>
+     * A path is either a file or a directory, never both, but path lookups match {@code <path>} and
+     * {@code <path>/} alike, so a directory entry can be returned while writing a file and the other
+     * way around. Taking it at face value corrupts the path: writing a file over a directory entry
+     * derives the new revision from that entry and then stores it as a directory pinned to revision 1,
+     * so the content lands one revision ahead of the indexed one and can never be read back.
+     * <p>
+     * A live entry of the other kind is a genuine conflict and is rejected. A deleted one no longer
+     * owns the path, so it is purged and the write starts from a clean slate.
+     *
+     * @return the entry when it is of the expected kind, otherwise {@link Optional#empty()}.
+     * @throws ConflictException if a live entry of the other kind holds the path.
+     */
+    private Optional<NamespaceFileMetadata> discardConflictingEntry(Optional<NamespaceFileMetadata> found, boolean expectDirectory, Path path) throws IOException {
+        Optional<NamespaceFileMetadata> conflicting = found.filter(metadata -> metadata.isDirectory() != expectDirectory);
+        if (conflicting.isEmpty()) {
+            return found;
+        }
+
+        NamespaceFileMetadata metadata = conflicting.get();
+        if (!metadata.isDeleted()) {
+            throw new ConflictException(
+                String.format(
+                    "Cannot create %s '%s' in namespace '%s': a %s already exists at this path.",
+                    expectDirectory ? "directory" : "file",
+                    path,
+                    namespace,
+                    metadata.isDirectory() ? "directory" : "file"
+                )
+            );
+        }
+
+        logger.debug(
+            "Purging deleted {} '{}' of namespace '{}', its path is being reused by a {}.",
+            metadata.isDirectory() ? "directory" : "file",
+            metadata.getPath(),
+            namespace,
+            expectDirectory ? "directory" : "file"
+        );
+        this.purge(NamespaceFile.fromMetadata(metadata));
+
+        return Optional.empty();
+    }
+
+    /**
+     * Make all parent directories for a given path.
+     */
+    private List<NamespaceFile> mkDirs(String path) throws IOException {
+        List<NamespaceFile> createdDirs = new ArrayList<>();
+        Optional<Path> maybeParentPath = Optional.empty();
+        while (
+            (maybeParentPath = Optional.ofNullable(NamespaceFileMetadata.parentPath(maybeParentPath.map(Path::toString).orElse(path))).map(Path::of)).isPresent()
+                && !this.exists(maybeParentPath.get())
+        ) {
+            this.createSingleDirectory(maybeParentPath.get());
+            createdDirs.add(NamespaceFile.of(namespace, maybeParentPath.get().toString().endsWith("/") ? maybeParentPath.get().toString() : maybeParentPath.get() + "/", 1));
+        }
+
+        return createdDirs;
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public NamespaceFile createDirectory(Path path) throws IOException {
+        final Path normalizedPath = NamespaceFile.normalize(path);
+
+        mkDirs(normalizedPath.toString());
+
+        return createSingleDirectory(normalizedPath);
+    }
+
+    private NamespaceFile createSingleDirectory(Path normalizedPath) throws IOException {
+        discardConflictingEntry(findByPath(normalizedPath, true), true, normalizedPath);
+
+        NamespaceFileMetadata nsFileMetadata = namespaceFileMetadataRepository.save(
+            NamespaceFileMetadata.builder()
+                .tenantId(tenant)
+                .namespace(namespace)
+                .path(normalizedPath.toString().endsWith("/") ? normalizedPath.toString() : normalizedPath + "/")
+                .size(0L)
+                .build()
+        );
+        storage.createDirectory(tenant, namespace, NamespaceFile.of(namespace, normalizedPath, 1).storagePath().toUri());
+
+        return NamespaceFile.fromMetadata(nsFileMetadata);
+    }
+
+    /**
+     * {@inheritDoc}
+     **/
+    @Override
+    public List<NamespaceFile> delete(Path path) throws IOException {
+        final Path normalizedPath = NamespaceFile.normalize(path);
+
+        Optional<NamespaceFileMetadata> maybeNamespaceFileMetadata = namespaceFileMetadataRepository.find(
+            Pageable.from(1, 1), tenant, List.of(
+                QueryFilter.builder().field(QueryFilter.Field.NAMESPACE).operation(QueryFilter.Op.EQUALS).value(namespace).build(),
+                QueryFilter.builder().field(QueryFilter.Field.PATH).operation(QueryFilter.Op.IN).value(List.of(normalizedPath.toString(), normalizedPath + "/")).build()
+            ), false
+        ).stream().findFirst();
+
+        List<NamespaceFileMetadata> toDelete = Stream.concat(
+            this.children(normalizedPath.toString(), true).stream().map(NamespaceFileMetadata::toDeleted),
+            maybeNamespaceFileMetadata.map(NamespaceFileMetadata::toDeleted).stream()
+        ).toList();
+
+        toDelete.forEach(namespaceFileMetadataRepository::save);
+
+        return toDelete.stream().map(NamespaceFile::fromMetadata).toList();
+    }
+
+    @Override
+    public boolean purge(NamespaceFile namespaceFile) throws IOException {
+        // Purge the metadata entry before removing the object, so an interrupted purge leaves a
+        // reclaimable orphan object rather than a dangling index entry that would 404 on read.
+        namespaceFileMetadataRepository.purge(List.of(NamespaceFileMetadata.of(tenant, namespaceFile)));
+        storage.delete(tenant, namespace, namespaceFile.storagePath().toUri());
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Integer purge(List<NamespaceFile> namespaceFiles) throws IOException {
+        Integer purgedMetadataCount = this.namespaceFileMetadataRepository.purge(namespaceFiles.stream().map(namespaceFile -> NamespaceFileMetadata.of(tenant, namespaceFile)).toList());
+
+        long actualDeletedEntries = namespaceFiles.stream()
+            .map(NamespaceFile::storagePath)
+            .map(Path::toUri)
+            .map(throwFunction(uri -> this.storage.delete(tenant, namespace, uri)))
+            .filter(Boolean::booleanValue)
+            .count();
+
+        if (actualDeletedEntries != purgedMetadataCount) {
+            log.warn("Namespace Files Metadata purge reported {} deleted entries, but {} values were actually deleted from storage", purgedMetadataCount, actualDeletedEntries);
+        }
+
+        return purgedMetadataCount;
+    }
+}
