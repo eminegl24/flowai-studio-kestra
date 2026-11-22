@@ -1,3 +1,4 @@
+<!-- Modified for FlowAI Studio. See FLOWAI-NOTICE.txt. -->
 <template>
     <div class="logo">
         <router-link v-if="link" :to="{name: 'home'}">
@@ -23,14 +24,14 @@
             width: 100%;
             height: 0;
             padding-top: 23.0842912%;
-            background: url(../../../src/assets/logo.svg) 0 0 no-repeat;
+            background: url(../../../src/assets/flowai-logo.svg) 0 0 no-repeat;
             background-size: contain;
             display: block;
             overflow: unset;
 
 
             html.dark & {
-                background: url(../../../src/assets/logo-white.svg) 0 0 no-repeat;
+                background: url(../../../src/assets/flowai-logo-white.svg) 0 0 no-repeat;
             }
         }
         a {

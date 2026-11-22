@@ -1,0 +1,18 @@
+id: banka_baglanti_kontrolu
+namespace: egitim.banka
+description: Test PostgreSQL source and Oracle target with read-only queries.
+tasks:
+  - id: postgres_musteri_sayisi
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: jdbc:postgresql://127.0.0.1:15432/bank_source
+    username: bank_source
+    password: "{{ secret('BANK_PG_PASSWORD') }}"
+    sql: SELECT COUNT(*) AS kayit_sayisi FROM public.customers
+    fetchType: FETCH_ONE
+  - id: oracle_musteri_sayisi
+    type: io.kestra.plugin.jdbc.oracle.Query
+    url: jdbc:oracle:thin:@//127.0.0.1:11521/FREEPDB1
+    username: bank_dwh
+    password: "{{ secret('BANK_ORACLE_PASSWORD') }}"
+    sql: SELECT COUNT(*) AS KAYIT_SAYISI FROM bank_dwh.customers
+    fetchType: FETCH_ONE

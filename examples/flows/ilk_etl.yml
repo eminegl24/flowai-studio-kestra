@@ -1,0 +1,14 @@
+id: ilk_etl
+namespace: egitim.baslangic
+
+tasks:
+  - id: fetch_posts
+    type: io.kestra.plugin.core.http.Request
+    uri: https://jsonplaceholder.typicode.com/posts
+
+  - id: write_csv
+    type: io.kestra.plugin.core.storage.Write
+    extension: .csv
+    content: |
+      id,title{% for post in fromJson(outputs.fetch_posts.body) %}
+      {{ post.id }},"{{ post.title | replace({'"': '""'}) }}"{% endfor %}

@@ -6,7 +6,7 @@
             :icon="AiIcon" 
             @click="handleClick"
         >
-            {{ $t("ai.flow.title") }}
+            {{ label ?? $t("ai.flow.title") }}
         </el-button>
     </div>
 </template>
@@ -15,6 +15,7 @@
     import AiIcon from "./AiIcon.vue";
 
     interface AITriggerButtonProps {
+        label?: string;
         show: boolean;
         opened: boolean;
     }

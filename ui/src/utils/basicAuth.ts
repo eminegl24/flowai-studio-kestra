@@ -1,3 +1,4 @@
+// Modified for FlowAI Studio. See FLOWAI-NOTICE.txt.
 export function logout() {
     document.cookie = "BASIC_AUTH=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;samesite=strict";
     return true;
@@ -11,7 +12,7 @@ export function signIn(username: string, password: string) {
 }
 
 export function isLoggedIn() {
-    return Boolean(credentials())
+    return window.FLOWAI_MANAGED_AUTH === true || Boolean(credentials())
 }
 
 export function credentials() {

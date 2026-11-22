@@ -1,20 +1,21 @@
+<!-- Modified for FlowAI Studio. See FLOWAI-NOTICE.txt. -->
 <template>
     <el-select
         placement="right-end"
         :popperOffset="20"
         :showArrow="false"
         :suffixIcon="ChevronRight"
-        :placeholder="$t('kestra')"
+        placeholder="FlowAI Studio"
         popperClass="user-select border border-0"
     >
         <template #prefix>
-            <img src="../../../assets/ks-logo-small.svg" width="40" alt="Kestra" class="user-avatar">
+            <img src="/flowai.svg" width="40" alt="FlowAI Studio" class="user-avatar">
         </template>
         <template #header>
             <el-option :value="{}" class=" list-unstyled">
                 <div class="menu-item">
-                    <img src="../../../assets/ks-logo-small.svg" width="40" alt="Kestra">
-                    {{ $t("kestra") }}
+                    <img src="/flowai.svg" width="40" alt="FlowAI Studio">
+                    FlowAI Studio
                 </div>
             </el-option>
         </template>
@@ -70,7 +71,13 @@
         params: {tenant: route.params.tenant},
     }));
 
-    const logout = () => {
+    const logout = async () => {
+        if (window.FLOWAI_MANAGED_AUTH) {
+            const response = await fetch("/logout", {method: "POST"});
+            if (response.ok) window.location.assign("/login");
+            return;
+        }
+
         BasicAuth.logout();
         delete axios.defaults.headers.common["Authorization"];
         router.push({name: "login"});

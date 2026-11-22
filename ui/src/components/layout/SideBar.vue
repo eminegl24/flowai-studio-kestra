@@ -1,3 +1,4 @@
+<!-- Modified for FlowAI Studio. See FLOWAI-NOTICE.txt. -->
 <template>
     <SidebarMenu
         ref="sideBarRef"
@@ -20,6 +21,7 @@
                 </component>
             </div>
             <Environment />
+            <a v-if="!collapsed" class="studio-link" href="/studio">Studio tools</a>
         </template>
 
         <template #footer>
@@ -149,7 +151,18 @@
     position: static;
     z-index: 1039;
     border-right: 1px solid var(--ks-border-primary);
+    --ks-background-left-menu: #edf8f6;
     background-color: var(--ks-background-left-menu);
+
+    html.dark & {
+        --ks-background-left-menu: #102422;
+    }
+
+    .studio-link {
+        color: light-dark(#0f766e, #5eead4);
+        display: block;
+        padding: .5rem 1rem;
+    }
 
     .logo {
         overflow: hidden;
@@ -168,13 +181,13 @@
 
             span.img {
                 height: 100%;
-                background: url(../../assets/logo.svg) 0 0 no-repeat;
+                background: url(../../assets/flowai-logo.svg) 0 0 no-repeat;
                 background-size: 179px 55px;
                 display: block;
                 transition: 0.2s all;
 
                 html.dark & {
-                    background-image: url(../../assets/logo-white.svg);
+                    background-image: url(../../assets/flowai-logo-white.svg);
                 }
             }
         }

@@ -64,3 +64,6 @@ core/src/main/resources/gradle.properties
 # Helm chart dependencies (downloaded at build time, not committed)
 charts/kestra/charts/
 charts/kestra-starter/charts/
+
+# FlowAI Studio local runtime and secrets
+/.flowai-local/

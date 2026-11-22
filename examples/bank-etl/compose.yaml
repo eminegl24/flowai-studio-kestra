@@ -1,0 +1,35 @@
+name: flowai-bank-lab
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports: ["127.0.0.1:15432:5432"]
+    environment:
+      POSTGRES_DB: bank_source
+      POSTGRES_USER: bank_source
+      POSTGRES_PASSWORD: ${BANK_PG_PASSWORD:?Create .env first}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank_source -d bank_source"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  oracle:
+    image: gvenzl/oracle-free:23-slim-faststart
+    ports: ["127.0.0.1:11521:1521"]
+    environment:
+      ORACLE_RANDOM_PASSWORD: "yes"
+      APP_USER: bank_dwh
+      APP_USER_PASSWORD: ${BANK_ORACLE_PASSWORD:?Create .env first}
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      - ./oracle:/container-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  postgres_data:
+  oracle_data:

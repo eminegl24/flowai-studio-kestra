@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Studio tools · FlowAI Studio</title>
+<style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { margin: 0 auto; max-width: 56rem; padding: 1.5rem; }
+    header, nav { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+    header { justify-content: space-between; }
+    h1 { color: light-dark(#134e4a, #99f6e4); }
+    a { color: light-dark(#0f766e, #5eead4); }
+    section { border-top: 1px solid #80808066; padding: 1rem 0; }
+    textarea { width: min(100%, 42rem); box-sizing: border-box; min-height: 5rem; }
+    button { padding: .4rem .75rem; cursor: pointer; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #80808014; padding: 1rem; }
+    pre:empty { display: none; }
+    .chat-turn { padding: .75rem 1rem; border-inline-start: 3px solid light-dark(#0f766e, #5eead4); margin: .75rem 0; }
+    .chat-turn pre { font: inherit; padding: 0; margin: .4rem 0 0; background: transparent; }
+    .chat-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+    form { display: grid; gap: .65rem; justify-items: start; }
+</style>
+</head>
+<body>
+<header><h1>FlowAI Studio</h1><nav><a href="/ui/">Workflows</a>
+<form action="/logout" method="post"><button>Sign out</button></form></nav></header>
+<p id="account" role="status"></p>
+<main id="tools" hidden>
+<section id="copilot-sohbet" lang="tr">
+    <h2>Copilot Sohbet</h2>
+    <p>FlowAI hakkında soru sor veya açıklatmak istediğin Python kodunu yapıştır.</p>
+    <div id="chat-log" role="log" aria-label="Sohbet mesajları"></div>
+    <form id="chat-form">
+        <label for="chat-prompt">Mesajın</label>
+        <textarea id="chat-prompt" name="prompt" maxlength="8000" required
+                  placeholder="Örnek: Metrics ile Outputs arasındaki fark nedir?"></textarea>
+        <small>Mesajın ve yakın sohbet geçmişin Google Gemini’ye gönderilir. Parola veya gerçek banka verisi paylaşma.</small>
+        <div class="chat-actions">
+            <button id="chat-send">Gönder</button>
+            <button type="button" id="chat-reset">Yeni sohbet</button>
+        </div>
+        <div id="chat-status" role="status"></div>
+    </form>
+</section>
+<section>
+    <h2>SAP Data Services migration</h2>
+    <form data-action="migration">
+        <label for="export">ATL or XML export</label>
+        <input id="export" name="export" type="file" accept=".atl,.xml" required>
+        <button>Inventory export</button>
+    </form>
+    <pre aria-live="polite"></pre>
+</section>
+<section>
+    <h2>AI Copilot</h2>
+    <form data-action="copilot">
+        <label for="copilot">Describe the Kestra workflow to draft</label>
+        <textarea id="copilot" name="prompt" maxlength="8000" required></textarea>
+        <button>Generate draft</button>
+    </form>
+    <pre aria-live="polite"></pre>
+</section>
+<section>
+    <h2>AgentHub adapter</h2>
+    <form data-action="agenthub">
+        <label for="agenthub">Prompt</label>
+        <textarea id="agenthub" name="prompt" maxlength="8000" required></textarea>
+        <button>Send prompt</button>
+    </form>
+    <pre aria-live="polite"></pre>
+</section>
+<section>
+    <h2>Audit activity</h2>
+    <button id="audit">Load recent activity</button>
+    <pre aria-live="polite"></pre>
+</section>
+</main>
+<script type="module">
+    async function request(action, payload) {
+        const options = payload === undefined ? {} : {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        };
+        const response = await fetch("/studio/" + action, options);
+        const result = response.headers.get("Content-Type")?.includes("application/json")
+            ? await response.json() : await response.text();
+        if (!response.ok) throw new Error(result.error ?? result);
+        return result;
+    }
+
+    async function show(button, operation) {
+        const output = button.closest("section").querySelector("pre");
+        button.disabled = true;
+        output.textContent = "Working…";
+        try {
+            const result = await operation();
+            output.textContent = result.draft && !result.objects
+                ? result.draft + (result.validation?.length ? "\n\n" + JSON.stringify(result.validation, null, 2) : "")
+                : result.reply ?? JSON.stringify(result, null, 2);
+        } catch (error) {
+            output.textContent = error.message;
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    const account = document.querySelector("#account");
+    try {
+        const {actor, role} = await request("me");
+        account.textContent = actor + " · " + role;
+        document.querySelector("#tools").hidden = role !== "admin";
+    } catch (error) {
+        account.textContent = error.message;
+    }
+    for (const form of document.querySelectorAll("[data-action]")) {
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const data = new FormData(form);
+            const action = form.dataset.action;
+            show(form.querySelector("button"), async () => {
+                if (action === "migration") {
+                    const file = data.get("export");
+                    if (file.size > 512000) throw new Error("Choose an export up to 512 KB.");
+                    return request(action, {filename: file.name, source: await file.text()});
+                }
+                return request(action, {prompt: data.get("prompt")});
+            });
+        });
+    }
+    const chatForm = document.querySelector("#chat-form");
+    const chatLog = document.querySelector("#chat-log");
+    const chatPrompt = document.querySelector("#chat-prompt");
+    const chatStatus = document.querySelector("#chat-status");
+    const chatSend = document.querySelector("#chat-send");
+    const chatReset = document.querySelector("#chat-reset");
+    let history = [];
+
+    function appendTurn(author, value) {
+        const turn = document.createElement("div");
+        turn.className = "chat-turn";
+        const name = document.createElement("strong");
+        name.textContent = author;
+        const message = document.createElement("pre");
+        message.textContent = value;
+        turn.append(name, message);
+        chatLog.append(turn);
+    }
+
+    chatReset.addEventListener("click", () => {
+        history = [];
+        chatLog.replaceChildren();
+        chatStatus.textContent = "";
+        chatPrompt.value = "";
+        chatPrompt.focus();
+    });
+
+    chatForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const prompt = chatPrompt.value.trim();
+        if (!prompt || chatSend.disabled) return;
+        chatSend.disabled = chatReset.disabled = chatPrompt.readOnly = true;
+        chatStatus.textContent = "Gemini yanıt hazırlıyor…";
+        try {
+            const {reply} = await request("chat", {prompt, history});
+            appendTurn("Sen", prompt);
+            appendTurn("Copilot", reply);
+            history = [...history, {role: "user", text: prompt},
+                {role: "model", text: reply.slice(0, 8000)}].slice(-12);
+            chatPrompt.value = "";
+            chatStatus.textContent = "";
+        } catch (error) {
+            chatStatus.textContent = error.message;
+        } finally {
+            chatSend.disabled = chatReset.disabled = chatPrompt.readOnly = false;
+            chatPrompt.focus();
+        }
+    });
+
+    const audit = document.querySelector("#audit");
+    audit.addEventListener("click", () => show(audit, () => request("audit")));
+</script>
+</body>
+</html>

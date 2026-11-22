@@ -1,3 +1,4 @@
+// Modified for FlowAI Studio. See FLOWAI-NOTICE.txt.
 import {createApp} from "vue"
 
 import App from "./App.vue"
@@ -30,6 +31,10 @@ initApp(app, routes, null, en).then(({router, piniaStore}) => {
         try {
             const miscStore = useMiscStore();
             const configs = await miscStore.loadConfigs();
+
+            if (window.FLOWAI_MANAGED_AUTH) {
+                return next(to.name === "login" || to.name === "setup" ? {name: "welcome"} : undefined);
+            }
 
             if(!configs.isBasicAuthInitialized) {
                 // Since, Configs takes preference
@@ -77,6 +82,7 @@ initApp(app, routes, null, en).then(({router, piniaStore}) => {
             return next();
         } catch (error) {
             console.error("Error during authentication check:", error);
+            if (window.FLOWAI_MANAGED_AUTH) return next(false);
             return next(handleAuthError(error, to))
         }
     });

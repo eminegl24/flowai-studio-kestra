@@ -1,0 +1,12 @@
+FlowAI Studio development fork
+
+Based on Kestra 1.3.48
+Copyright Kestra Technologies
+Upstream: https://github.com/kestra-io/kestra
+Source revision: f6f8cdb66598b24923f70569547aaccbef52c2b4
+
+This fork retains the upstream Apache License 2.0 and attribution.
+FlowAI Studio modifies branding, the frontend sign-in and sign-out
+integration, and the navigation link for Studio tools. The gateway,
+Studio tools, connectors and tests under flowai/ are independent
+additions distributed under the Apache License 2.0.

@@ -1,0 +1,7 @@
+id: ders_01_merhaba
+namespace: egitim.baslangic
+
+tasks:
+  - id: mesaj_yaz
+    type: io.kestra.plugin.core.log.Log
+    message: "Merhaba FlowAI Studio!"

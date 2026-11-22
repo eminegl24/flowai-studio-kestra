@@ -8,6 +8,7 @@
         <OnboardingOverlay v-if="shouldRenderApp && route?.name && !route.meta?.anonymous" />
         <UnsavedChangesDialog />
         <DisabledTriggerRemovedDialog />
+        <FlowAIChat v-if="managedAuth && loaded && !route.meta?.anonymous" />
     </el-config-provider>
 </template>
 
@@ -25,6 +26,7 @@
     import ErrorToast from "./components/ErrorToast.vue";
     import OnboardingOverlay from "./components/onboarding/OnboardingOverlay.vue";
     import DefaultLayout from "override/components/layout/DefaultLayout.vue";
+    import FlowAIChat from "./components/FlowAIChat.vue";
     import DocIdDisplay from "./components/DocIdDisplay.vue";
     import UnsavedChangesDialog from "./components/UnsavedChangesDialog.vue";
     import DisabledTriggerRemovedDialog from "./components/flows/DisabledTriggerRemovedDialog.vue";
@@ -34,6 +36,7 @@
     import {usePluginsStore} from "./stores/plugins";
 
     const loaded = ref(false);
+    const managedAuth = window.FLOWAI_MANAGED_AUTH === true;
 
     const apiStore = useApiStore();
     const layoutStore = useLayoutStore();

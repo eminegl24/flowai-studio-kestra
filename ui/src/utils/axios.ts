@@ -1,3 +1,4 @@
+// Modified for FlowAI Studio. See FLOWAI-NOTICE.txt.
 import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, AxiosProgressEvent} from "axios"
 import NProgress from "nprogress"
 import {inject} from "vue"
@@ -120,6 +121,11 @@ export const createAxios = (
             }
 
             if (errorResponse.response.status === 401 && errorResponse.config?.skipAuthErrorHandling) {
+                return Promise.reject(errorResponse)
+            }
+
+            if (errorResponse.response.status === 401 && window.FLOWAI_MANAGED_AUTH) {
+                window.location.assign("/login")
                 return Promise.reject(errorResponse)
             }
 

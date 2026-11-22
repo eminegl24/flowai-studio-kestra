@@ -9,11 +9,12 @@
         <template #header v-if="!props.onboarding">
             <div class="d-flex justify-content-between align-items-center">
                 <span class="d-inline-flex title align-items-center">
-                    <AiIcon />&nbsp;<span>{{ $t("ai.flow.title") }}</span>
+                    <AiIcon />&nbsp;<span>{{ props.chat ? "Copilot Sohbet" : $t("ai.flow.title") }}</span>
                 </span>
                 <el-button
                     class="ai-close-button"
                     :icon="Close"
+                    :aria-label="props.chat ? 'Sohbeti kapat' : undefined"
                     @click.stop="emit('close')"
                 />
             </div>
@@ -159,6 +160,18 @@
         </div>
 
         <div v-else class="ai-body">
+            <div v-if="props.chat" ref="chatLog" class="ai-chat-history" role="log" aria-label="Sohbet mesajları">
+                <p v-if="!chatTurns.length">FlowAI hakkında soru sor veya açıklatmak istediğin Python kodunu yapıştır.</p>
+                <div
+                    v-for="(turn, index) in chatTurns"
+                    :key="index"
+                    class="ai-chat-turn"
+                    :class="turn.role === 'user' ? 'ai-chat-turn-user' : 'ai-chat-turn-model'"
+                >
+                    <strong>{{ turn.role === "user" ? "Sen" : "Copilot" }}</strong>
+                    <p>{{ turn.text }}</p>
+                </div>
+            </div>
             <template v-if="isListening">
                 <div class="ai-voice-pill">
                     <div class="ai-waves-track" ref="wavesContainer">
@@ -182,7 +195,10 @@
                     type="textarea"
                     :disabled="waitingForReply"
                     :autosize="{minRows: 2, maxRows: 6}"
-                    :placeholder="$t(`ai.${generationType}.prompt_placeholder`)"
+                    :placeholder="props.chat ? 'Mesajını yaz…' : $t(`ai.${generationType}.prompt_placeholder`)"
+                    :aria-label="props.chat ? 'Mesajın' : undefined"
+                    :maxlength="props.chat ? 8000 : undefined"
+                    @keydown.shift.enter.stop
                     @keydown.exact.enter.prevent="submitPrompt"
                     @keydown.exact.ctrl.enter="$event.preventDefault(); prompt += '\n'"
                     class="ai-custom-textarea"
@@ -202,11 +218,14 @@
         <template #footer v-if="!props.onboarding">
             <div v-if="configured" class="ai-footer">
                 <div class="footer-left">
-                    <span class="shortcut-hint">(⌘) Ctrl + Alt (⌥) + Shift + K {{ $t("to toggle") }}</span>
+                    <el-button v-if="props.chat" text :disabled="waitingForReply" @click="resetChat">
+                        Yeni sohbet
+                    </el-button>
+                    <span v-else class="shortcut-hint">(⌘) Ctrl + Alt (⌥) + Shift + K {{ $t("to toggle") }}</span>
                 </div>
 
                 <el-select
-                    v-if="providers.length > 1"
+                    v-if="!props.chat && providers.length > 1"
                     class="w-50 mx-3"
                     :modelValue="selectedProvider"
                     @update:model-value="onProviderChange"
@@ -224,7 +243,7 @@
                     <template v-if="waitingForReply">
                         <span class="generating-label">
                             <el-icon class="is-loading"><Loading /></el-icon>
-                            {{ $t(`ai.flow.generating.${generationType}`) }}
+                            {{ props.chat ? "Yanıt hazırlanıyor…" : $t(`ai.flow.generating.${generationType}`) }}
                         </span>
                     </template>
                     <template v-else-if="isListening">
@@ -252,6 +271,7 @@
                         <el-button
                             type="primary"
                             class="send-btn"
+                            :aria-label="props.chat ? 'Gönder' : undefined"
                             :disabled="!prompt.trim()"
                             @click="submitPrompt"
                         >
@@ -260,6 +280,7 @@
                     </template>
                 </div>
             </div>
+            <small v-if="props.chat" class="ai-chat-privacy">Mesajlar Google Gemini’ye gönderilir. Parola veya banka verisi paylaşma.</small>
         </template>
     </el-card>
 </template>
@@ -296,6 +317,7 @@
     }>();
 
     const props = defineProps<{
+        chat?: boolean,
         flow: string,
         conversationId: string,
         generationType?: AiGenerationType,
@@ -308,10 +330,49 @@
     }>();
 
     const prompt = ref(
-        props.onboarding ? props.initialPrompt ?? "" : sessionStorage.getItem("kestra-ai-prompt") ?? "",
+        props.chat ? "" : props.onboarding ? props.initialPrompt ?? "" : sessionStorage.getItem("kestra-ai-prompt") ?? "",
     );
 
     const error = ref<string | undefined>(undefined);
+    const chatTurns = ref<{role: "user" | "model"; text: string}[]>([]);
+    const chatLog = ref<HTMLDivElement>();
+
+    function resetChat() {
+        chatTurns.value = [];
+        prompt.value = "";
+        error.value = undefined;
+        focusPrompt();
+    }
+
+    async function submitChat() {
+        const question = prompt.value.trim();
+        waitingForReply.value = true;
+        try {
+            const history = chatTurns.value.slice(-12).map(turn => ({...turn, text: turn.text.slice(0, 8000)}));
+            const response = await fetch("/studio/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({prompt: question, history}),
+            });
+            if (!response.ok) {
+                throw new Error(response.headers.get("Content-Type")?.includes("application/json")
+                    ? (await response.json()).error
+                    : await response.text());
+            }
+            const {reply} = await response.json();
+            chatTurns.value.push({role: "user", text: question}, {role: "model", text: reply});
+            prompt.value = "";
+            await nextTick();
+            if (chatLog.value) chatLog.value.scrollTop = chatLog.value.scrollHeight;
+        } catch (cause) {
+            error.value = cause instanceof Error ? cause.message : "Yanıt alınamadı.";
+        } finally {
+            waitingForReply.value = false;
+            await nextTick();
+            focusPrompt();
+        }
+    }
+
 
     const QUOTA_STORAGE_KEY = "kestra-ai-remaining-quota";
     const QUOTA_DATE_KEY = "kestra-ai-remaining-quota-date";
@@ -481,8 +542,9 @@
     }
 
     async function submitPrompt() {
-        if (!prompt.value.trim()) return;
+        if (!prompt.value.trim() || waitingForReply.value) return;
         error.value = undefined;
+        if (props.chat) return submitChat();
         // Blur before disabling to avoid the textarea focus ring flashing on submit.
         const activeElement = document.activeElement as HTMLElement | null;
         activeElement?.blur?.();
@@ -650,7 +712,7 @@
     watch(
         prompt,
         (value) => {
-            if (!props.onboarding) {
+            if (!props.onboarding && !props.chat) {
                 sessionStorage.setItem("kestra-ai-prompt", value);
             }
 
@@ -704,6 +766,55 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
+}
+
+.ai-chat-history {
+    max-height: min(40dvh, 20rem);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: .625rem;
+    padding: .125rem .25rem .75rem;
+    color: var(--ks-content-primary);
+
+    > p { margin: .25rem 0; }
+}
+
+.ai-chat-turn {
+    flex: none;
+    max-width: 88%;
+    padding: .625rem .875rem;
+    border-radius: .9rem;
+    border: 1px solid transparent;
+
+    strong { font-size: .75rem; }
+    p {
+        margin: .2rem 0 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+}
+
+.ai-chat-turn-user {
+    align-self: flex-end;
+    color: #fff;
+    background: #6335b4;
+    border-color: #9570e5;
+    border-end-end-radius: .25rem;
+}
+
+.ai-chat-turn-model {
+    align-self: flex-start;
+    color: light-dark(#301d51, #f2eaff);
+    background: light-dark(#efe5ff, #38274f);
+    border-color: light-dark(#d8c3fa, #675087);
+    border-end-start-radius: .25rem;
+}
+
+.ai-chat-privacy {
+    display: block;
+    color: var(--ks-content-tertiary);
+    padding-bottom: .3rem;
 }
 
 .ai-body-onboarding {
