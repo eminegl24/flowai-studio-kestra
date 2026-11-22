@@ -18,28 +18,19 @@ import {shouldShowWelcome} from "../../utils/welcomeGuard";
 import AiMenuIcon from "../../components/ai/AiMenuIcon.vue";
 import ChartLineVariant from "vue-material-design-icons/ChartLineVariant.vue";
 import FileTreeOutline from "vue-material-design-icons/FileTreeOutline.vue";
-import LayersTripleOutline from "vue-material-design-icons/LayersTripleOutline.vue";
 import ContentCopy from "vue-material-design-icons/ContentCopy.vue";
 import PlayOutline from "vue-material-design-icons/PlayOutline.vue";
 import FileDocumentOutline from "vue-material-design-icons/FileDocumentOutline.vue";
-import FlaskOutline from "vue-material-design-icons/FlaskOutline.vue";
-import PackageVariantClosed from "vue-material-design-icons/PackageVariantClosed.vue";
 import FolderOpenOutline from "vue-material-design-icons/FolderOpenOutline.vue";
 import PuzzleOutline from "vue-material-design-icons/PuzzleOutline.vue";
 import ShapePlusOutline from "vue-material-design-icons/ShapePlusOutline.vue";
 import OfficeBuildingOutline from "vue-material-design-icons/OfficeBuildingOutline.vue";
-import ServerNetworkOutline from "vue-material-design-icons/ServerNetworkOutline.vue";
-
-// Blueprints icons
-import Wrench from "vue-material-design-icons/Wrench.vue";
 
 // Tenant Administration icons
 import Monitor from "vue-material-design-icons/Monitor.vue";
 import DatabaseOutline from "vue-material-design-icons/DatabaseOutline.vue";
-import LockOutline from "vue-material-design-icons/LockOutline.vue";
 import LightningBolt from "vue-material-design-icons/LightningBolt.vue";
 import Battery40 from "vue-material-design-icons/Battery40.vue";
-import ShieldAccount from "vue-material-design-icons/ShieldAccount.vue";
 
 export type MenuItem = {
     id?: string; // Generated at the end of menu computation
@@ -149,19 +140,6 @@ export function useLeftMenu() {
                 },
             },
             {
-                title: t("apps"),
-                routes: routeStartWith("apps"),
-                href: {
-                    name: "apps/list",
-                },
-                icon: {
-                    element: LayersTripleOutline,
-                },
-                attributes: {
-                    locked: true,
-                },
-            },
-            {
                 title: t("executions"),
                 routes: routeStartWith("executions"),
                 href: {
@@ -179,32 +157,6 @@ export function useLeftMenu() {
                 },
                 icon: {
                     element: FileDocumentOutline,
-                },
-            },
-            {
-                title: t("demos.tests.label"),
-                routes: routeStartWith("tests"),
-                href: {
-                    name: "tests/list",
-                },
-                icon: {
-                    element: FlaskOutline,
-                },
-                attributes: {
-                    locked: true,
-                },
-            },
-            {
-                title: t("demos.assets.label"),
-                routes: routeStartWith("assets"),
-                href: {
-                    name: "assets/list",
-                },
-                icon: {
-                    element: PackageVariantClosed,
-                },
-                attributes: {
-                    locked: true,
                 },
             },
             {
@@ -245,23 +197,6 @@ export function useLeftMenu() {
                 },
                 child: [
                     {
-                        title: t("blueprints.custom"),
-                        routes: routeStartWith("blueprints/flow/custom"),
-                        href: {
-                            name: "blueprints",
-                            params: {
-                                kind: "flow",
-                                tab: "custom",
-                            },
-                        },
-                        icon: {
-                            element: Wrench,
-                        },
-                        attributes: {
-                            locked: true,
-                        },
-                    },
-                    {
                         title: t("blueprints.flows"),
                         routes: routeStartWith("blueprints/flow/community"),
                         href: {
@@ -289,23 +224,6 @@ export function useLeftMenu() {
                             element: ChartLineVariant,
                         },
                     },
-                    {
-                        title: t("blueprints.apps"),
-                        routes: routeStartWith("blueprints/app"),
-                        href: {
-                            name: "blueprints",
-                            params: {
-                                kind: "app",
-                                tab: "community",
-                            },
-                        },
-                        icon: {
-                            element: LayersTripleOutline,
-                        },
-                        attributes: {
-                            locked: true,
-                        },
-                    },
                 ],
             },
             {
@@ -313,10 +231,7 @@ export function useLeftMenu() {
                 routes: [
                     "admin/stats",
                     "kv",
-                    "secrets",
                     "admin/triggers",
-                    "admin/auditlogs",
-                    "admin/iam",
                     "admin/concurrency-limits",
                 ]
                     .map(routeStartWith)
@@ -346,19 +261,6 @@ export function useLeftMenu() {
                         },
                     },
                     {
-                        title: t("secret.names"),
-                        routes: routeStartWith("secrets"),
-                        href: {
-                            name: "secrets/list",
-                        },
-                        icon: {
-                            element: LockOutline,
-                        },
-                        attributes: {
-                            locked: true,
-                        },
-                    },
-                    {
                         title: t("triggers"),
                         routes: routeStartWith("admin/triggers"),
                         href: {
@@ -366,19 +268,6 @@ export function useLeftMenu() {
                         },
                         icon: {
                             element: LightningBolt,
-                        },
-                    },
-                    {
-                        title: t("auditlogs"),
-                        routes: routeStartWith("admin/auditlogs"),
-                        href: {
-                            name: "admin/auditlogs/list",
-                        },
-                        icon: {
-                            element: FileDocumentOutline,
-                        },
-                        attributes: {
-                            locked: true,
                         },
                     },
                     {
@@ -392,33 +281,7 @@ export function useLeftMenu() {
                         },
                         hidden: !configs?.isConcurrencyViewEnabled,
                     },
-                    {
-                        title: t("iam"),
-                        routes: routeStartWith("admin/iam"),
-                        href: {
-                            name: "admin/iam",
-                        },
-                        icon: {
-                            element: ShieldAccount,
-                        },
-                        attributes: {
-                            locked: true,
-                        },
-                    },
                 ],
-            },
-            {
-                title: t("instance"),
-                routes: routeStartWith("admin/instance"),
-                href: {
-                    name: "admin/instance",
-                },
-                icon: {
-                    element: ServerNetworkOutline,
-                },
-                attributes: {
-                    locked: true,
-                },
             },
         ];
 

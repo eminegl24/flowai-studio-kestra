@@ -11,7 +11,7 @@ from urllib.parse import urlencode
 from urllib.request import build_opener, HTTPCookieProcessor, HTTPRedirectHandler, Request
 from uuid import uuid4
 
-URL = "http://127.0.0.1:18081"
+URL = f"http://127.0.0.1:{os.environ.get('FLOWAI_PORT', '18081')}"
 CONFIG = json.loads(Path(os.environ.get("FLOWAI_CONFIG", Path(__file__).with_name("config.local.json"))).read_text())
 XML = '<export><job name="Daily"><workflow name="Load"/><dataflow name="Extract"/></job></export>'
 API = "/api/v1/main"

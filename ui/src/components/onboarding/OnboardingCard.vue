@@ -31,7 +31,7 @@
     import {computed} from "vue";
     import OpenInNew from "vue-material-design-icons/OpenInNew.vue";
     import Monitor from "vue-material-design-icons/Monitor.vue";
-    import Slack from "./components/SlackLogo.vue";
+    import Teams from "vue-material-design-icons/MicrosoftTeams.vue";
     import PlayBox from "vue-material-design-icons/PlayBoxMultiple.vue";
     import Markdown from "../layout/Markdown.vue";
 
@@ -42,11 +42,11 @@
 
     const props = defineProps<OnboardingCardModel>();
 
-    const getIcon = () => ({help: Slack, tutorial: PlayBox, tour: Monitor}[props.category] || Monitor);
+    const getIcon = () => ({help: Teams, tutorial: PlayBox, tour: Monitor}[props.category] || Monitor);
 
     const getLink = () => {
         const links = {
-            help: "https://kestra.io/slack?utm_source=app&utm_medium=referral&utm_campaign=onboarding-welcome",
+            help: "https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook",
         };
         return links[props.category as keyof typeof links] || "#";
     };

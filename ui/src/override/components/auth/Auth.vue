@@ -31,9 +31,9 @@
                 {{ $t("settings.label") }}
             </RouterLink>
         </el-option>
-        <el-option label="slack" value="slack">
-            <a href="https://kestra.io/slack?utm_source=app&utm_medium=referral&utm_campaign=top-auth" target="_blank" class="menu-item">
-                <Slack class="menu-icon" />
+        <el-option label="Microsoft Teams" value="teams">
+            <a href="https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook" target="_blank" class="menu-item">
+                <Teams class="menu-icon" />
                 {{ $t("join_slack") }}
             </a>
         </el-option>
@@ -53,7 +53,7 @@
     import {useRoute, useRouter} from "vue-router";
 
     import CogOutline from "vue-material-design-icons/CogOutline.vue";
-    import Slack from "vue-material-design-icons/Slack.vue";
+    import Teams from "vue-material-design-icons/MicrosoftTeams.vue";
     import ChevronRight from "vue-material-design-icons/ChevronRight.vue";
     import Logout from "vue-material-design-icons/Logout.vue";
     import RocketLaunchOutline from "vue-material-design-icons/RocketLaunchOutline.vue";

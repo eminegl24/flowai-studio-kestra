@@ -11,6 +11,16 @@ import * as BasicAuth from "./utils/basicAuth";
 import {useMiscStore} from "override/stores/misc";
 
 
+const unavailablePages = new Set([
+    "apps/list", "tests/list", "assets/list", "secrets/list",
+    "admin/auditlogs/list", "admin/iam", "admin/instance",
+]);
+const unavailableTabs = {
+    "flows/update": ["auditlogs"],
+    "executions/update": ["auditlogs", "assets"],
+    "namespaces/update": ["edit", "secrets", "assets", "variables", "plugin-defaults", "history", "audit-logs"],
+};
+
 const app = createApp(App)
 
 const handleAuthError = (error, to) => {
@@ -33,7 +43,20 @@ initApp(app, routes, null, en).then(({router, piniaStore}) => {
             const configs = await miscStore.loadConfigs();
 
             if (window.FLOWAI_MANAGED_AUTH) {
-                return next(to.name === "login" || to.name === "setup" ? {name: "welcome"} : undefined);
+                if (to.name === "login" || to.name === "setup") {
+                    return next({name: "welcome"});
+                }
+                if (unavailablePages.has(to.name)) {
+                    return next({name: "flows/list", params: {tenant: to.params.tenant}, replace: true});
+                }
+                if (["blueprints", "blueprints/view"].includes(to.name)
+                    && (to.params.kind === "app" || to.params.tab === "custom")) {
+                    return next({name: "blueprints", params: {tenant: to.params.tenant, kind: "flow", tab: "community"}, replace: true});
+                }
+                if (unavailableTabs[to.name]?.includes(to.params.tab)) {
+                    return next({name: to.name, params: {...to.params, tab: "overview"}, replace: true});
+                }
+                return next();
             }
 
             if(!configs.isBasicAuthInitialized) {

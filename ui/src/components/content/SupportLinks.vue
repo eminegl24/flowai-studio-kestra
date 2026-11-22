@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
     import GithubIcon from "vue-material-design-icons/Github.vue";
-    import SlackIcon from "vue-material-design-icons/Slack.vue";
+    import TeamsIcon from "vue-material-design-icons/MicrosoftTeams.vue";
     import LifebuoyIcon from "vue-material-design-icons/Lifebuoy.vue";
 
     defineProps<{
@@ -21,10 +21,10 @@
     }>()
 
     const buttons = [{
-                         label: "Community Slack",
+                         label: "Microsoft Teams setup",
                          description: "Discuss topics with other users and kestra Team",
-                         href: "https://kestra.io/slack?utm_source=app&utm_medium=referral&utm_campaign=support-link",
-                         icon: SlackIcon,
+                         href: "https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook",
+                         icon: TeamsIcon,
                      },
                      {
                          label: "GitHub",

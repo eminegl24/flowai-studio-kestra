@@ -1,0 +1,14 @@
+id: daily_log
+namespace: tutorial
+
+triggers:
+  - id: every_morning
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 8 * * *"
+    timezone: Europe/Istanbul
+    disabled: true
+
+tasks:
+  - id: write_message
+    type: io.kestra.plugin.core.log.Log
+    message: Daily FlowAI check

@@ -616,8 +616,8 @@
     "environment color setting": "環境色",
     "slack support": "Slackで質問する",
     "join community": "コミュニティに参加",
-    "join_slack": "Slackに参加",
-    "kestra": "Kestra",
+    "join_slack": "Microsoft Teams",
+    "kestra": "FlowAI Studio",
     "reach us": "お問い合わせ",
     "new version": "新しいバージョン{version}が利用可能です！",
     "error detected": "エラーが検出されました。",
@@ -859,7 +859,7 @@
             "chart_color_scheme": {
               "label": "チャートのカラースキーム",
               "classic": "クラシック",
-              "kestra": "Kestra"
+              "kestra": "FlowAI Studio"
             }
           }
         },
@@ -905,10 +905,10 @@
       },
       "apps": {
         "title": "Kestraでカスタムアプリを構築する",
-        "message": "Kestra Enterprise Editionのアプリは、プラットフォーム外からKestraのworkflowと連携するカスタムUIを構築することを可能にします。この機能により、workflowをカスタムアプリケーションのバックエンドとして使用でき、技術的でないユーザーがフォームを通じてデータを送信したり、承認待ちのPAUSED状態のworkflowを再開したりすることができます。",
+        "message": "FlowAI Studio Enterprise Editionのアプリは、プラットフォーム外からKestraのworkflowと連携するカスタムUIを構築することを可能にします。この機能により、workflowをカスタムアプリケーションのバックエンドとして使用でき、技術的でないユーザーがフォームを通じてデータを送信したり、承認待ちのPAUSED状態のworkflowを再開したりすることができます。",
         "blueprints": {
           "title": "アプリのblueprintから開始します。",
-          "message": "アプリのblueprintは、フォーム、承認、データ送信などの一般的なユースケースに対応する既製のアプリです。Kestra Enterprise Editionでは、任意のblueprintを起点として使用し、ワークフローの上にカスタムUIを構築するために適応させることができます。"
+          "message": "アプリのblueprintは、フォーム、承認、データ送信などの一般的なユースケースに対応する既製のアプリです。FlowAI Studio Enterprise Editionでは、任意のblueprintを起点として使用し、ワークフローの上にカスタムUIを構築するために適応させることができます。"
         }
       },
       "tests": {
@@ -925,52 +925,52 @@
       },
       "IAM": {
         "title": "IAMを通じてユーザーを管理（SSO、SCIM、RBACを使用）",
-        "message": "Kestra Enterprise Editionには、シングルサインオン（SSO）、SCIMディレクトリ同期、ロールベースのアクセス制御（RBAC）を備えた組み込みのIAM機能があり、複数のアイデンティティプロバイダーと統合し、ユーザーおよびサービスアカウントに対して詳細な権限を割り当てることができます。"
+        "message": "FlowAI Studio Enterprise Editionには、シングルサインオン（SSO）、SCIMディレクトリ同期、ロールベースのアクセス制御（RBAC）を備えた組み込みのIAM機能があり、複数のアイデンティティプロバイダーと統合し、ユーザーおよびサービスアカウントに対して詳細な権限を割り当てることができます。"
       },
       "tenants": {
         "title": "隔離されたTenantでWorkflowを管理する",
-        "message": "Kestra Enterprise Editionはマルチテナンシーをサポートしており、異なるチームやプロジェクトごとに完全に分離された環境を提供します。それぞれの環境には、専用のworkerグループやシークレット、内部ストレージバックエンドなどのリソースが含まれます。"
+        "message": "FlowAI Studio Enterprise Editionはマルチテナンシーをサポートしており、異なるチームやプロジェクトごとに完全に分離された環境を提供します。それぞれの環境には、専用のworkerグループやシークレット、内部ストレージバックエンドなどのリソースが含まれます。"
       },
       "audit-logs": {
         "title": "監査Logで変更を追跡",
-        "message": "Kestra Enterprise Editionは、すべてのアクティビティを堅牢で不変の記録としてログに記録し、変更の追跡、コンプライアンスの維持、問題のトラブルシューティングを容易にします。"
+        "message": "FlowAI Studio Enterprise Editionは、すべてのアクティビティを堅牢で不変の記録としてログに記録し、変更の追跡、コンプライアンスの維持、問題のトラブルシューティングを容易にします。"
       },
       "instance": {
         "title": "インスタンス全体のインフラストラクチャを管理する",
-        "message": "Kestra Enterprise Editionは、プラットフォームの健康状態を観察し、Workers、Schedulers、Executorsなどのすべてのサービスの稼働時間メトリクスを追跡するための運用ダッシュボードを提供します。同じページから、計画されたダウンタイムについてユーザーに通知するためのアナウンスを作成することもでき、アップグレードを実行するためにすべてのサービスとワークフローの実行を一時的にPAUSED状態にするメンテナンスモードに入ることもできます。"
+        "message": "FlowAI Studio Enterprise Editionは、プラットフォームの健康状態を観察し、Workers、Schedulers、Executorsなどのすべてのサービスの稼働時間メトリクスを追跡するための運用ダッシュボードを提供します。同じページから、計画されたダウンタイムについてユーザーに通知するためのアナウンスを作成することもでき、アップグレードを実行するためにすべてのサービスとワークフローの実行を一時的にPAUSED状態にするメンテナンスモードに入ることもできます。"
       },
       "blueprints": {
         "title": "カスタムBlueprintの追加",
-        "message": "Kestra Enterprise Editionでは、組織専用のカスタムBlueprintを作成できます。これらをベストプラクティスのテンプレートとして使用し、チーム内で一般的に使用されるworkflowを共有、集中化、文書化することができます。"
+        "message": "FlowAI Studio Enterprise Editionでは、組織専用のカスタムBlueprintを作成できます。これらをベストプラクティスのテンプレートとして使用し、チーム内で一般的に使用されるworkflowを共有、集中化、文書化することができます。"
       },
       "namespace": {
         "edit": {
           "title": "名前空間管理をアップグレードする",
-          "message": "Kestra Enterprise Editionでは、namespaceはシークレット、変数、プラグインのデフォルトの高度な分離とガバナンスを提供します。管理者は、カスタムシークレットマネージャー、分離されたストレージバックエンド、専用のworkerグループ、および詳細な権限をnamespaceごとに設定できます。これにより、シークレット、変数、およびプラグインの設定が異なるチームやプロジェクト間で安全かつ簡単に管理されることが保証されます。"
+          "message": "FlowAI Studio Enterprise Editionでは、namespaceはシークレット、変数、プラグインのデフォルトの高度な分離とガバナンスを提供します。管理者は、カスタムシークレットマネージャー、分離されたストレージバックエンド、専用のworkerグループ、および詳細な権限をnamespaceごとに設定できます。これにより、シークレット、変数、およびプラグインの設定が異なるチームやプロジェクト間で安全かつ簡単に管理されることが保証されます。"
         },
         "secrets": {
           "title": "秘密を安全に管理する方法",
-          "message": "Kestra Enterprise Editionでは、namespaceレベルでシークレットを保存および管理することができ、リスクを最小限に抑え、各チームの認証情報を分離して保持します。ネストされた階層のおかげで、親namespaceで認証情報を設定すると、すべての子namespaceに継承されます。専用のシークレットマネージャーのサポートと詳細なnamespaceレベルの権限設定により、セキュリティとコンプライアンスがさらに強化されます。"
+          "message": "FlowAI Studio Enterprise Editionでは、namespaceレベルでシークレットを保存および管理することができ、リスクを最小限に抑え、各チームの認証情報を分離して保持します。ネストされた階層のおかげで、親namespaceで認証情報を設定すると、すべての子namespaceに継承されます。専用のシークレットマネージャーのサポートと詳細なnamespaceレベルの権限設定により、セキュリティとコンプライアンスがさらに強化されます。"
         },
         "assets": {
           "title": "資産管理の集中化",
-          "message": "Kestra Enterprise Editionでは、Assetsはワークフローがやり取りするリソースのライブインベントリを保持します。これらのリソースには、データベーステーブル、仮想マシン、ファイル、または使用する外部システムが含まれます。"
+          "message": "FlowAI Studio Enterprise Editionでは、Assetsはワークフローがやり取りするリソースのライブインベントリを保持します。これらのリソースには、データベーステーブル、仮想マシン、ファイル、または使用する外部システムが含まれます。"
         },
         "variables": {
           "title": "変数を中央で管理する",
-          "message": "Kestra Enterprise Editionでは、namespaceレベルの変数を定義および管理することで、flow全体での繰り返しの設定を排除できます。これらの変数は一貫性を確保し、設定の更新を簡素化し、どのtaskやtriggerからも簡単に参照できるため、よりクリーンで保守しやすいワークフローを実現します。"
+          "message": "FlowAI Studio Enterprise Editionでは、namespaceレベルの変数を定義および管理することで、flow全体での繰り返しの設定を排除できます。これらの変数は一貫性を確保し、設定の更新を簡素化し、どのtaskやtriggerからも簡単に参照できるため、よりクリーンで保守しやすいワークフローを実現します。"
         },
         "plugin-defaults": {
           "title": "プラグインのデフォルトで設定を標準化する",
-          "message": "Kestra Enterprise Editionでは、namespace固有のプラグインデフォルトを設定でき、各flowでの重複した設定の必要性を減らします。この中央プラグインガバナンスは、一貫した設定を強制し、秘密情報や変数の安全な参照を可能にし、ワークフローのメンテナンスを簡素化します。"
+          "message": "FlowAI Studio Enterprise Editionでは、namespace固有のプラグインデフォルトを設定でき、各flowでの重複した設定の必要性を減らします。この中央プラグインガバナンスは、一貫した設定を強制し、秘密情報や変数の安全な参照を可能にし、ワークフローのメンテナンスを簡素化します。"
         },
         "history": {
           "title": "一箇所でリビジョン履歴を管理",
-          "message": "Kestra Enterprise Editionでは、Namespacesのリビジョン履歴を管理できます。"
+          "message": "FlowAI Studio Enterprise Editionでは、Namespacesのリビジョン履歴を管理できます。"
         },
         "audit-logs": {
           "title": "すべての変更を一箇所で追跡",
-          "message": "Kestra Enterprise Editionでは、namespaceレベルの監査Logを詳細な差分とともに表示でき、すべてのリソースにわたって誰が何をいつ変更したかの履歴を明確に確認できます。"
+          "message": "FlowAI Studio Enterprise Editionでは、namespaceレベルの監査Logを詳細な差分とともに表示でき、すべてのリソースにわたって誰が何をいつ変更したかの履歴を明確に確認できます。"
         }
       }
     },
@@ -991,7 +991,7 @@
         "docs": "ドキュメント",
         "tutorial": "チュートリアル",
         "blueprints": "ブループリント",
-        "slack": "Slack コミュニティ"
+        "slack": "Microsoft Teams コミュニティ"
       },
       "steps": {
         "flow_basics": {
@@ -1100,7 +1100,7 @@
         "add_cron_trigger_cron": "cron 式を追加します。例: `\"*/5 * * * *\"`。",
         "add_input_default_section": "`inputs` に戻り、既存の `name` という名前の input を 1 つ保持してください (2 つ目の input は追加しないでください)。",
         "add_input_default_id": "既存の入力 ID を `name` のままにしてください。",
-        "add_input_default_defaults": "`name` のデフォルト値を追加します。例: `defaults: \"Kestra\"`。",
+        "add_input_default_defaults": "`name` のデフォルト値を追加します。例: `defaults: \"FlowAI Studio\"`。",
         "save_flow_again": "続行するには、もう一度保存をクリックしてください。"
       }
     },
@@ -1648,11 +1648,11 @@
         "user": "管理者ユーザーを作成",
         "config": "設定を検証",
         "survey": "詳細を教えてください",
-        "complete": "Kestra UIを開始"
+        "complete": "FlowAI Studio UIを開始"
       },
       "titles": {
         "user": "管理者ユーザーを作成",
-        "survey": "Kestra OSSの改善にご協力ください"
+        "survey": "FlowAI Studio OSSの改善にご協力ください"
       },
       "subtitles": {
         "user": "インスタンスを保護して開始します。",
@@ -2135,7 +2135,7 @@
             "description": "一般的なユースケースのための事前構築されたワークフローテンプレート"
           },
           "slack": {
-            "title": "Slack コミュニティ",
+            "title": "Microsoft Teams コミュニティ",
             "description": "他のユーザーとつながり、コミュニティからサポートを受ける"
           },
           "videos": {

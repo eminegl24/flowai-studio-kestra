@@ -3,7 +3,7 @@ import {useRoute} from "vue-router";
 import CompassOutline from "vue-material-design-icons/CompassOutline.vue";
 import ShapePlusOutline from "vue-material-design-icons/ShapePlusOutline.vue";
 import Youtube from "vue-material-design-icons/Youtube.vue";
-import Slack from "vue-material-design-icons/Slack.vue";
+import Teams from "vue-material-design-icons/MicrosoftTeams.vue";
 import CalendarMonth from "vue-material-design-icons/CalendarMonth.vue";
 
 export function useOnboardingResources() {
@@ -33,9 +33,9 @@ export function useOnboardingResources() {
         {
             titleKey: "welcome_copilot.success_page.items.slack.title",
             descriptionKey: "welcome_copilot.success_page.items.slack.description",
-            icon: Slack,
+            icon: Teams,
             iconClass: "is-slack",
-            href: "https://kestra.io/slack?utm_source=app&utm_medium=referral&utm_campaign=onboarding-welcome",
+            href: "https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook",
         },
         {
             titleKey: "welcome_copilot.success_page.items.videos.title",

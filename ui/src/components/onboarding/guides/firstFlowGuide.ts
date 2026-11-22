@@ -276,7 +276,7 @@ tasks:
         snippet: `inputs:
   - id: name
     type: STRING
-    defaults: "Kestra"`,
+    defaults: "FlowAI Studio"`,
         validate: ({flowYaml}) => {
             const {parsed, error} = parseFlow(flowYaml);
             if (error) {

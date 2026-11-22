@@ -1,0 +1,64 @@
+id: postgres_to_oracle_teshis
+namespace: egitim.banka
+description: Başarısız aktarım için kaynak ödeme hesaplarını Oracle hedefinde salt okunur olarak kontrol eder.
+inputs:
+  - id: source_execution_id
+    type: STRING
+triggers:
+  - id: aktarim_basarisiz
+    disabled: true
+    type: io.kestra.plugin.core.trigger.Flow
+    inputs:
+      source_execution_id: "{{ trigger.executionId }}"
+    preconditions:
+      id: aktarim
+      flows:
+        - namespace: egitim.banka
+          flowId: postgres_to_oracle_transactions
+          states: [FAILED]
+tasks:
+  - id: hesaplari_kontrol_et
+    type: io.kestra.plugin.scripts.python.Script
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    beforeCommands:
+      - python3 -m venv .venv
+      - . .venv/bin/activate
+      - python -m pip install 'psycopg[binary]==3.3.9' 'oracledb==4.0.2'
+    env:
+      SOURCE_EXECUTION_ID: "{{ inputs.source_execution_id }}"
+      BANK_PG_PASSWORD: "{{ secret('BANK_PG_PASSWORD') }}"
+      BANK_ORACLE_PASSWORD: "{{ secret('BANK_ORACLE_PASSWORD') }}"
+    script: |
+      import os
+
+      import oracledb
+      import psycopg
+
+      print("İncelenen çalıştırma:", os.environ["SOURCE_EXECUTION_ID"])
+      with psycopg.connect(
+          host="127.0.0.1", port=15432, dbname="bank_source", user="bank_source",
+          password=os.environ["BANK_PG_PASSWORD"], connect_timeout=5,
+          options="-c default_transaction_read_only=on",
+      ) as source, source.cursor() as cursor:
+          cursor.execute(
+              "SELECT DISTINCT account_id FROM public.transactions WHERE transaction_type = %s",
+              ("PAYMENT",),
+          )
+          source_accounts = {row[0] for row in cursor}
+
+      with oracledb.connect(
+          user="bank_dwh", password=os.environ["BANK_ORACLE_PASSWORD"],
+          dsn="127.0.0.1:11521/FREEPDB1", tcp_connect_timeout=5,
+      ) as target, target.cursor() as cursor:
+          cursor.execute("SET TRANSACTION READ ONLY")
+          cursor.execute("SELECT account_id FROM bank_dwh.accounts")
+          target_accounts = {row[0] for row in cursor}
+
+      missing = sorted(source_accounts - target_accounts)
+      print("Kontrol edilen hesap sayısı:", len(source_accounts))
+      print("Oracle'da eksik ödeme hesapları:", missing)
+      if missing:
+          print("Öneri: Önce ilgili müşteri ve hesap kayıtlarını Oracle'a aktar.")
+      else:
+          print("Güncel veride eksik ödeme hesabı yok. Geçmiş hata farklı bir durumu yansıtabilir.")

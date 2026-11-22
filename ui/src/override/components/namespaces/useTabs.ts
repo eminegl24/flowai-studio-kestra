@@ -7,15 +7,7 @@ import {
     useHelpers,
 } from "../../../components/namespaces/utils/useHelpers";
 
-import DemoNamespace from "../../../components/demo/Namespace.vue";
-
 import KVTable from "../../../components/kv/KVTable.vue";
-
-const lockedProps = (tab: string) => ({
-    locked: true,
-    component: DemoNamespace,
-    props: {tab},
-});
 
 export function useTabs() {
     const route = useRoute();
@@ -26,45 +18,10 @@ export function useTabs() {
     const tabs: Tab[] = [
         ...useHelpers().tabs,
         {
-            ...lockedProps("edit"),
-            name: "edit",
-            title: t("edit"),
-        },
-        {
-            ...lockedProps("secrets"),
-            name: "secrets",
-            title: t("secret.names"),
-        },
-        {
-            ...lockedProps("assets"),
-            name: "assets",
-            title: t("assets.title"),
-        },
-        {
-            ...lockedProps("variables"),
-            name: "variables",
-            title: t("variables"),
-        },
-        {
-            ...lockedProps("plugin-defaults"),
-            name: "plugin-defaults",
-            title: t("pluginDefaults.title"),
-        },
-        {
             name: "kv",
             title: t("kv.name"),
             component: KVTable,
             props: {namespace},
-        },
-        {
-            ...lockedProps("history"),
-            name: "history",
-            title: t("revisions"),
-        },
-        {
-            ...lockedProps("audit-logs"),
-            name: "audit-logs",
-            title: t("auditlogs"),
         },
     ];
 

@@ -3,7 +3,7 @@
         <div class="content">
             <img
                 :src="noexecutionimg"
-                alt="Kestra"
+                alt="FlowAI Studio"
                 class="logo img-fluid"
             >
             <h2 class="title">

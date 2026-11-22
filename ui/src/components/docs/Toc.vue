@@ -53,14 +53,14 @@
     const docStore = useDocStore();
 
     const sections = {
-        "Get Started with Kestra": [
+        "Get Started with FlowAI Studio": [
             "Getting Started",
             "Tutorial",
             "Architecture",
             "Installation Guide",
             "User Interface"
         ],
-        "Build with Kestra": [
+        "Build with FlowAI Studio": [
             "Concepts",
             "Workflow Components",
             "Expressions",
@@ -68,12 +68,12 @@
             "Plugin Developer Guide",
             "How-to Guides"
         ],
-        "Scale with Kestra": [
+        "Scale with FlowAI Studio": [
             "Enterprise Edition",
             "Task Runners",
             "Best Practices"
         ],
-        "Manage Kestra": [
+        "Manage FlowAI Studio": [
             "Administrator Guide",
             "Configuration Guide",
             "Migration Guide",

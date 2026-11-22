@@ -1,0 +1,42 @@
+id: postgres_to_oracle_bildirim
+namespace: egitim.banka
+description: Müşteri aktarımının sonucunu kaydeder ve e-posta gönderir.
+
+triggers:
+  - id: aktarim_bitti
+    disabled: true
+    type: io.kestra.plugin.core.trigger.Flow
+    preconditions:
+      id: aktarim_sonucu
+      flows:
+        - namespace: egitim.banka
+          flowId: postgres_to_oracle_transactions
+          states: [SUCCESS, FAILED]
+
+tasks:
+  - id: calistirma_turunu_kontrol_et
+    type: io.kestra.plugin.core.flow.If
+    condition: "{{ trigger is defined }}"
+    then:
+      - id: sonucu_kaydet
+        type: io.kestra.plugin.core.log.Log
+        message: |
+          Akış: {{ trigger.namespace }}.{{ trigger.flowId }}
+          Sonuç: {{ trigger.state }}
+          Aktarım Execution ID: {{ trigger.executionId }}
+
+      - id: eposta_gonder
+        type: io.kestra.plugin.resend.email.Send
+        apiKey: "{{ secret('RESEND_API_KEY') }}"
+        from: "{{ secret('RESEND_FROM') }}"
+        to:
+          - "{{ secret('RESEND_TO') }}"
+        subject: "PostgreSQL → Oracle aktarım sonucu: {{ trigger.state }}"
+        html: |
+          <p><strong>Akış:</strong> {{ trigger.namespace }}.{{ trigger.flowId }}</p>
+          <p><strong>Sonuç:</strong> {{ trigger.state }}</p>
+          <p><strong>Aktarım Execution ID:</strong> {{ trigger.executionId }}</p>
+    else:
+      - id: manuel_testi_kaydet
+        type: io.kestra.plugin.core.log.Log
+        message: "Manuel bildirim testi. Aktarım tetikleyicisi olmadığı için e-posta gönderilmedi."

@@ -1,0 +1,31 @@
+id: postgres_to_oracle_teams_bildirim
+namespace: egitim.banka
+description: PostgreSQL → Oracle aktarımı tamamlandığında Microsoft Teams'e durum bildirimi gönderir.
+
+triggers:
+  - id: aktarim_tamamlandi
+    type: io.kestra.plugin.core.trigger.Flow
+    disabled: true
+    preconditions:
+      id: aktarim
+      flows:
+        - namespace: egitim.banka
+          flowId: postgres_to_oracle_transactions
+          states: [SUCCESS, FAILED]
+
+tasks:
+  - id: teams_bildirimi
+    type: io.kestra.plugin.core.flow.If
+    condition: "{{ trigger is defined }}"
+    then:
+      - id: teams_gonder
+        type: io.kestra.plugin.core.http.Request
+        uri: "{{ secret('TEAMS_WEBHOOK_URL') }}"
+        method: POST
+        contentType: application/json
+        body: |
+          {"text": {{ ('FlowAI Studio · PostgreSQL → Oracle: ' ~ trigger.state ~ ' · Execution ID: ' ~ trigger.executionId) | toJson }}}
+    else:
+      - id: manuel_test
+        type: io.kestra.plugin.core.log.Log
+        message: "Manuel önizleme. Teams bildirimi için aktarımın tetikleyiciyi başlatması gerekir."

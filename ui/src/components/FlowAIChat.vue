@@ -1,9 +1,15 @@
 <template>
     <aside v-if="canChat" class="flowai-chat">
         <section v-if="openedOnce" v-show="open" id="flowai-chat-panel" aria-label="Copilot Sohbet">
-            <AiCopilot chat flow="" conversation-id="" @close="open = false" />
+            <AiCopilot chat flow="" conversation-id="" @close="closeChat" @minimize="minimizeChat" />
         </section>
-        <AITriggerButton show :opened="open" label="Copilot Sohbet" @click="openChat" />
+        <AITriggerButton
+            show
+            :opened="open"
+            :icon-only="minimized"
+            :label="minimized ? 'Sohbeti aç' : 'Copilot Sohbet'"
+            @click="openChat"
+        />
     </aside>
 </template>
 
@@ -15,6 +21,7 @@
     const canChat = ref(false);
     const open = ref(false);
     const openedOnce = ref(false);
+    const minimized = ref(false);
 
     onMounted(async () => {
         try {
@@ -24,6 +31,16 @@
             canChat.value = false;
         }
     });
+
+    function closeChat() {
+        minimized.value = false;
+        open.value = false;
+    }
+
+    function minimizeChat() {
+        minimized.value = true;
+        open.value = false;
+    }
 
     function openChat() {
         openedOnce.value = true;

@@ -616,8 +616,8 @@
     "environment color setting": "환경 색상",
     "slack support": "Slack을 통해 질문하기",
     "join community": "커뮤니티에 참여하기",
-    "join_slack": "Slack 참여",
-    "kestra": "Kestra",
+    "join_slack": "Microsoft Teams",
+    "kestra": "FlowAI Studio",
     "reach us": "문의하기",
     "new version": "새 버전 {version} 사용 가능!",
     "error detected": "오류가 감지되었습니다.",
@@ -815,7 +815,7 @@
       },
       "help": {
         "title": "도움이 필요하신가요?",
-        "text": "Slack 커뮤니티에서 질문을 하세요. 문제가 생기면 저희가 도와드리겠습니다. ✋"
+        "text": "Microsoft Teams 커뮤니티에서 질문을 하세요. 문제가 생기면 저희가 도와드리겠습니다. ✋"
       }
     },
     "pluginPage": {
@@ -859,7 +859,7 @@
             "chart_color_scheme": {
               "label": "차트 색상 구성표",
               "classic": "클래식",
-              "kestra": "Kestra"
+              "kestra": "FlowAI Studio"
             }
           }
         },
@@ -900,15 +900,15 @@
           "intro": "새 Secret을 생성하려면:",
           "first": "<a href=\"https://kestra.io/docs/how-to-guides/secrets?utm_source=app&utm_medium=referral&utm_campaign=secrets-inlinedoc#using-secrets-in-kestra\" target=\"_blank\">비밀 값</a>을 Base64로 인코딩하십시오.",
           "second": "위의 값을 사용하여 '<strong>SECRET_{'{MY_SECRET_KEY}'}</strong>'라는 환경 변수를 추가하세요.",
-          "third": "Kestra 인스턴스를 재시작하십시오"
+          "third": "FlowAI Studio 인스턴스를 재시작하십시오"
         }
       },
       "apps": {
         "title": "Kestra로 맞춤형 앱 만들기",
-        "message": "Kestra Enterprise Edition의 앱은 플랫폼 외부에서 Kestra 워크플로와 상호작용하는 맞춤형 UI를 구축할 수 있게 해줍니다. 이 기능을 통해 워크플로를 맞춤형 애플리케이션의 백엔드로 사용할 수 있으며, 비기술적 사용자도 양식을 통해 데이터를 제출하거나 승인을 기다리는 PAUSED 워크플로를 재개할 수 있습니다.",
+        "message": "FlowAI Studio Enterprise Edition의 앱은 플랫폼 외부에서 FlowAI Studio 워크플로와 상호작용하는 맞춤형 UI를 구축할 수 있게 해줍니다. 이 기능을 통해 워크플로를 맞춤형 애플리케이션의 백엔드로 사용할 수 있으며, 비기술적 사용자도 양식을 통해 데이터를 제출하거나 승인을 기다리는 PAUSED 워크플로를 재개할 수 있습니다.",
         "blueprints": {
           "title": "앱 blueprint에서 시작하기.",
-          "message": "앱 blueprint는 양식, 승인 및 데이터 제출과 같은 일반적인 사용 사례를 위한 기성 앱입니다. Kestra Enterprise Edition을 사용하면 모든 blueprint를 시작점으로 사용하여 워크플로우 위에 사용자 지정 UI를 구축하도록 조정할 수 있습니다."
+          "message": "앱 blueprint는 양식, 승인 및 데이터 제출과 같은 일반적인 사용 사례를 위한 기성 앱입니다. FlowAI Studio Enterprise Edition을 사용하면 모든 blueprint를 시작점으로 사용하여 워크플로우 위에 사용자 지정 UI를 구축하도록 조정할 수 있습니다."
         }
       },
       "tests": {
@@ -925,52 +925,52 @@
       },
       "IAM": {
         "title": "IAM을 통해 SSO, SCIM 및 RBAC로 사용자 관리",
-        "message": "Kestra Enterprise Edition은 단일 사인온(SSO), SCIM 디렉토리 동기화, 역할 기반 접근 제어(RBAC)와 같은 IAM 기능을 내장하고 있으며, 여러 ID 공급자와 통합하여 사용자 및 서비스 계정에 대해 세분화된 권한을 할당할 수 있습니다."
+        "message": "FlowAI Studio Enterprise Edition은 단일 사인온(SSO), SCIM 디렉토리 동기화, 역할 기반 접근 제어(RBAC)와 같은 IAM 기능을 내장하고 있으며, 여러 ID 공급자와 통합하여 사용자 및 서비스 계정에 대해 세분화된 권한을 할당할 수 있습니다."
       },
       "tenants": {
         "title": "격리된 Tenant에서 Workflow 관리",
-        "message": "Kestra Enterprise Edition은 멀티-tenancy를 지원하여, 각기 다른 팀이나 프로젝트를 위한 완전히 분리된 환경을 제공합니다. 각 환경은 전용 worker 그룹, 비밀 정보 및 내부 저장소 백엔드와 같은 자체 리소스를 갖추고 있습니다."
+        "message": "FlowAI Studio Enterprise Edition은 멀티-tenancy를 지원하여, 각기 다른 팀이나 프로젝트를 위한 완전히 분리된 환경을 제공합니다. 각 환경은 전용 worker 그룹, 비밀 정보 및 내부 저장소 백엔드와 같은 자체 리소스를 갖추고 있습니다."
       },
       "audit-logs": {
         "title": "변경 사항 추적 - 감사 Log",
-        "message": "Kestra Enterprise Edition은 모든 활동을 강력하고 변경 불가능한 기록으로 로그하여 변경 사항을 추적하고, 규정을 준수하며, 문제를 해결하는 것을 쉽게 만듭니다."
+        "message": "FlowAI Studio Enterprise Edition은 모든 활동을 강력하고 변경 불가능한 기록으로 로그하여 변경 사항을 추적하고, 규정을 준수하며, 문제를 해결하는 것을 쉽게 만듭니다."
       },
       "instance": {
         "title": "인스턴스 전반의 인프라 관리",
-        "message": "Kestra Enterprise Edition은 플랫폼의 상태를 관찰하고 Workers, Schedulers, Executors와 같은 모든 서비스의 가동 시간 지표를 추적할 수 있는 운영 대시보드를 제공합니다. 같은 페이지에서 계획된 다운타임에 대해 사용자에게 알리기 위한 공지를 생성할 수 있으며, 모든 서비스와 workflow 실행을 일시적으로 PAUSED 상태로 전환하여 업그레이드를 수행할 수 있는 유지보수 모드로 진입할 수 있습니다."
+        "message": "FlowAI Studio Enterprise Edition은 플랫폼의 상태를 관찰하고 Workers, Schedulers, Executors와 같은 모든 서비스의 가동 시간 지표를 추적할 수 있는 운영 대시보드를 제공합니다. 같은 페이지에서 계획된 다운타임에 대해 사용자에게 알리기 위한 공지를 생성할 수 있으며, 모든 서비스와 workflow 실행을 일시적으로 PAUSED 상태로 전환하여 업그레이드를 수행할 수 있는 유지보수 모드로 진입할 수 있습니다."
       },
       "blueprints": {
         "title": "사용자 정의 Blueprints 추가",
-        "message": "Kestra Enterprise Edition에서는 조직에만 사용할 수 있는 맞춤형 Blueprints를 생성할 수 있습니다. 이를 모범 사례 템플릿으로 사용하여 팀 내에서 자주 사용하는 workflow를 공유하고, 중앙 집중화하고, 문서화할 수 있습니다."
+        "message": "FlowAI Studio Enterprise Edition에서는 조직에만 사용할 수 있는 맞춤형 Blueprints를 생성할 수 있습니다. 이를 모범 사례 템플릿으로 사용하여 팀 내에서 자주 사용하는 workflow를 공유하고, 중앙 집중화하고, 문서화할 수 있습니다."
       },
       "namespace": {
         "edit": {
           "title": "네임스페이스 관리 업그레이드",
-          "message": "Kestra Enterprise Edition에서는 namespace가 비밀, 변수 및 플러그인 기본값의 고급 격리 및 관리를 제공합니다. 관리자는 사용자 정의 비밀 관리자, 격리된 저장소 백엔드, 전용 worker 그룹 및 세부적인 권한을 namespace별로 구성할 수 있습니다. 이를 통해 비밀, 변수 및 플러그인 구성이 다양한 팀과 프로젝트 전반에 걸쳐 안전하고 쉽게 유지될 수 있습니다."
+          "message": "FlowAI Studio Enterprise Edition에서는 namespace가 비밀, 변수 및 플러그인 기본값의 고급 격리 및 관리를 제공합니다. 관리자는 사용자 정의 비밀 관리자, 격리된 저장소 백엔드, 전용 worker 그룹 및 세부적인 권한을 namespace별로 구성할 수 있습니다. 이를 통해 비밀, 변수 및 플러그인 구성이 다양한 팀과 프로젝트 전반에 걸쳐 안전하고 쉽게 유지될 수 있습니다."
         },
         "secrets": {
           "title": "비밀을 안전하게 관리하기",
-          "message": "Kestra Enterprise Edition에서는 namespace 수준에서 비밀을 저장하고 제어할 수 있어 위험을 최소화하고 각 팀의 자격 증명이 격리된 상태로 유지됩니다. 중첩된 계층 구조 덕분에 상위 namespace에서 자격 증명을 구성하면 모든 하위 namespace에서 이를 상속받을 수 있습니다. 전용 비밀 관리자 지원 및 세분화된 namespace 수준의 권한 설정은 보안과 규정을 더욱 강화합니다."
+          "message": "FlowAI Studio Enterprise Edition에서는 namespace 수준에서 비밀을 저장하고 제어할 수 있어 위험을 최소화하고 각 팀의 자격 증명이 격리된 상태로 유지됩니다. 중첩된 계층 구조 덕분에 상위 namespace에서 자격 증명을 구성하면 모든 하위 namespace에서 이를 상속받을 수 있습니다. 전용 비밀 관리자 지원 및 세분화된 namespace 수준의 권한 설정은 보안과 규정을 더욱 강화합니다."
         },
         "assets": {
           "title": "자산 관리 중앙화",
-          "message": "Kestra Enterprise Edition에서 Assets는 워크플로우가 상호작용하는 리소스의 실시간 인벤토리를 유지합니다. 이러한 리소스는 데이터베이스 테이블, 가상 머신, 파일 또는 사용 중인 외부 시스템일 수 있습니다."
+          "message": "FlowAI Studio Enterprise Edition에서 Assets는 워크플로우가 상호작용하는 리소스의 실시간 인벤토리를 유지합니다. 이러한 리소스는 데이터베이스 테이블, 가상 머신, 파일 또는 사용 중인 외부 시스템일 수 있습니다."
         },
         "variables": {
           "title": "변수를 중앙에서 관리하세요",
-          "message": "Kestra Enterprise Edition에서는 namespace 수준 변수들을 정의하고 관리하여 flow 전반에 걸친 반복적인 구성을 제거할 수 있습니다. 이러한 변수들은 일관성을 보장하고, 구성 업데이트를 간소화하며, 어떤 task나 trigger에서도 쉽게 참조할 수 있어 더 깔끔하고 유지보수하기 쉬운 워크플로우를 만듭니다."
+          "message": "FlowAI Studio Enterprise Edition에서는 namespace 수준 변수들을 정의하고 관리하여 flow 전반에 걸친 반복적인 구성을 제거할 수 있습니다. 이러한 변수들은 일관성을 보장하고, 구성 업데이트를 간소화하며, 어떤 task나 trigger에서도 쉽게 참조할 수 있어 더 깔끔하고 유지보수하기 쉬운 워크플로우를 만듭니다."
         },
         "plugin-defaults": {
           "title": "플러그인 기본값으로 구성 표준화",
-          "message": "Kestra Enterprise Edition에서는 각 flow에서 중복된 설정의 필요성을 줄이기 위해 namespace별 플러그인 기본값을 설정할 수 있습니다. 이 중앙 플러그인 관리 기능은 일관된 구성 설정을 강제하고, 비밀 정보나 변수를 안전하게 참조할 수 있게 하며, 워크플로우의 유지 관리를 간소화합니다."
+          "message": "FlowAI Studio Enterprise Edition에서는 각 flow에서 중복된 설정의 필요성을 줄이기 위해 namespace별 플러그인 기본값을 설정할 수 있습니다. 이 중앙 플러그인 관리 기능은 일관된 구성 설정을 강제하고, 비밀 정보나 변수를 안전하게 참조할 수 있게 하며, 워크플로우의 유지 관리를 간소화합니다."
         },
         "history": {
           "title": "한 곳에서 수정 기록 관리",
-          "message": "Kestra Enterprise Edition에서는 namespace의 수정 이력을 관리할 수 있습니다."
+          "message": "FlowAI Studio Enterprise Edition에서는 namespace의 수정 이력을 관리할 수 있습니다."
         },
         "audit-logs": {
           "title": "모든 변경 사항을 한 곳에서 추적하기",
-          "message": "Kestra Enterprise Edition에서는 namespace 수준의 감사 로그를 상세한 차이점과 함께 볼 수 있어, 모든 리소스에 걸쳐 누가 무엇을 언제 변경했는지에 대한 명확한 기록을 제공합니다."
+          "message": "FlowAI Studio Enterprise Edition에서는 namespace 수준의 감사 로그를 상세한 차이점과 함께 볼 수 있어, 모든 리소스에 걸쳐 누가 무엇을 언제 변경했는지에 대한 명확한 기록을 제공합니다."
         }
       }
     },
@@ -991,7 +991,7 @@
         "docs": "문서",
         "tutorial": "튜토리얼",
         "blueprints": "Blueprints",
-        "slack": "Slack 커뮤니티"
+        "slack": "Microsoft Teams 커뮤니티"
       },
       "steps": {
         "flow_basics": {
@@ -1100,7 +1100,7 @@
         "add_cron_trigger_cron": "예를 들어, cron 표현식을 추가하세요: `\"*/5 * * * *\"`.",
         "add_input_default_section": "`inputs`로 돌아가서 `name`이라는 기존 input을 하나 유지하세요(두 번째 input을 추가하지 마세요).",
         "add_input_default_id": "기존 input ID를 `name`으로 유지합니다.",
-        "add_input_default_defaults": "`name`에 대한 기본값을 추가하세요. 예: `defaults: \"Kestra\"`.",
+        "add_input_default_defaults": "`name`에 대한 기본값을 추가하세요. 예: `defaults: \"FlowAI Studio\"`.",
         "save_flow_again": "계속하려면 다시 저장을 클릭하세요."
       }
     },
@@ -1259,7 +1259,7 @@
       },
       "workflow_components": {
         "title": "워크플로우 구성 요소",
-        "text": "Kestra workflow의 주요 오케스트레이션 구성 요소를 알아보세요."
+        "text": "FlowAI Studio workflow의 주요 오케스트레이션 구성 요소를 알아보세요."
       },
       "videos_tutorials": {
         "title": "비디오 튜토리얼",
@@ -1471,7 +1471,7 @@
       "loading_execution": "실행을 로드하는 중 문제가 발생했습니다.",
       "connection_lost": {
         "title": "연결이 중단되었습니다",
-        "message": "Kestra 인스턴스에 연결할 수 없습니다. 실행 중인지 확인한 후 페이지를 새로 고치세요."
+        "message": "FlowAI Studio 인스턴스에 연결할 수 없습니다. 실행 중인지 확인한 후 페이지를 새로 고치세요."
       }
     },
     "debug": "디버그",
@@ -1575,7 +1575,7 @@
       },
       "versionPlugin": {
         "title": "아직 버전이 지정된 플러그인이 없습니다!",
-        "content": "여기에서 Kestra 인스턴스에 설치된 모든 플러그인을 관리할 수 있습니다. 새로 설치된 플러그인은 인스턴스의 구성에 따라 모든 Kestra 서비스에서 즉시 사용 가능하지 않을 수 있습니다."
+        "content": "여기에서 FlowAI Studio 인스턴스에 설치된 모든 플러그인을 관리할 수 있습니다. 새로 설치된 플러그인은 인스턴스의 구성에 따라 모든 FlowAI Studio 서비스에서 즉시 사용 가능하지 않을 수 있습니다."
       },
       "panels": {
         "title": "현재 열려 있는 패널이 없습니다.",
@@ -1648,11 +1648,11 @@
         "user": "관리자 사용자 생성",
         "config": "구성 유효성 검사",
         "survey": "자세히 알려주세요",
-        "complete": "Kestra UI 시작"
+        "complete": "FlowAI Studio UI 시작"
       },
       "titles": {
         "user": "관리자 사용자 생성",
-        "survey": "Kestra OSS 개선에 도움을 주세요"
+        "survey": "FlowAI Studio OSS 개선에 도움을 주세요"
       },
       "subtitles": {
         "user": "인스턴스를 보호하여 시작하세요.",
@@ -1717,7 +1717,7 @@
       "flow": {
         "select_provider": "제공자 선택",
         "title": "AI 에이전트",
-        "prompt_placeholder": "Kestra flow를 생성하기 위한 지침을 입력하세요. 예시 프롬프트: 매주 월요일 오전 9시에 실행되는 flow를 생성하세요.",
+        "prompt_placeholder": "FlowAI Studio flow를 생성하기 위한 지침을 입력하세요. 예시 프롬프트: 매주 월요일 오전 9시에 실행되는 flow를 생성하세요.",
         "generating": {
           "flow": "Flow YAML을 생성 중입니다...",
           "dashboard": "대시보드 YAML을 생성 중입니다...",
@@ -1725,8 +1725,8 @@
           "test": "테스트 YAML을 생성 중입니다..."
         },
         "enable_instructions": {
-          "header": "<b>AI Copilot이 아직 구성되지 않았습니다.</b>\n\nAI Copilot을 활성화하려면, 다음 코드 조각을 Kestra 인스턴스 구성 파일(예: <code>application.yml</code>)에 추가하고 <code>geminiApiKey</code>를 실제 key로 교체하십시오:",
-          "footer": "참고: 현재 오픈 소스 에디션에서는 AI 제공자로 Gemini만 지원됩니다. 엔터프라이즈 에디션의 경우, 다른 모델 제공자 구성을 위해 AI Copilot 문서를 참조하십시오.\n\n구성을 저장한 후 Kestra 인스턴스를 재시작하십시오."
+          "header": "<b>AI Copilot이 아직 구성되지 않았습니다.</b>\n\nAI Copilot을 활성화하려면, 다음 코드 조각을 FlowAI Studio 인스턴스 구성 파일(예: <code>application.yml</code>)에 추가하고 <code>geminiApiKey</code>를 실제 key로 교체하십시오:",
+          "footer": "참고: 현재 오픈 소스 에디션에서는 AI 제공자로 Gemini만 지원됩니다. 엔터프라이즈 에디션의 경우, 다른 모델 제공자 구성을 위해 AI Copilot 문서를 참조하십시오.\n\n구성을 저장한 후 FlowAI Studio 인스턴스를 재시작하십시오."
         }
       },
       "dashboard": {
@@ -2117,7 +2117,7 @@
       },
       "success_popup": {
         "title": "축하합니다!",
-        "description": "첫 번째 flow를 성공적으로 실행했습니다! Kestra 전문가가 되는 길에 있습니다.",
+        "description": "첫 번째 flow를 성공적으로 실행했습니다! FlowAI Studio 전문가가 되는 길에 있습니다.",
         "tutorial": "심층 튜토리얼",
         "explore": "더 보기"
       },
@@ -2128,7 +2128,7 @@
         "items": {
           "tutorial": {
             "title": "튜토리얼 시작",
-            "description": "Kestra 기능의 대화형 안내"
+            "description": "FlowAI Studio 기능의 대화형 안내"
           },
           "blueprints": {
             "title": "블루프린트",
@@ -2144,7 +2144,7 @@
           },
           "demo": {
             "title": "데모 받기",
-            "description": "Kestra Enterprise Edition을 개인 맞춤형 데모로 탐색하세요."
+            "description": "FlowAI Studio Enterprise Edition을 개인 맞춤형 데모로 탐색하세요."
           }
         }
       },
@@ -2158,7 +2158,7 @@
           "description": "일반적인 워크플로 패턴을 위한 사용 가능한 예제와 템플릿을 탐색하세요."
         },
         "slack": {
-          "title": "Slack 커뮤니티",
+          "title": "Microsoft Teams 커뮤니티",
           "description": "아이디어와 모범 사례를 공유하고, 기술적인 질문에 대한 도움을 받으세요."
         }
       },
@@ -2169,11 +2169,11 @@
         },
         "installNginxViaAnsible": {
           "label": "Ansible를 통해 Nginx 설치",
-          "prompt": "Ansible을 사용하여 대상 머신에 Nginx를 설치하고 설치된 버전을 확인하는 Kestra flow를 생성합니다."
+          "prompt": "Ansible을 사용하여 대상 머신에 Nginx를 설치하고 설치된 버전을 확인하는 FlowAI Studio flow를 생성합니다."
         },
         "buildDbtPipeline": {
           "label": "dbt 파이프라인 구축",
-          "prompt": "Kestra flow를 생성하여 dbt 프로젝트 저장소를 복제하고 DuckDB 프로필로 dbt build를 실행합니다."
+          "prompt": "FlowAI Studio flow를 생성하여 dbt 프로젝트 저장소를 복제하고 DuckDB 프로필로 dbt build를 실행합니다."
         },
         "etlWorkflow": {
           "label": "ETL 워크플로우",
@@ -2181,11 +2181,11 @@
         },
         "microservicesApis": {
           "label": "마이크로서비스 & API",
-          "prompt": "웹사이트 API 응답을 확인하고 상태 코드가 성공적이지 않을 때 Slack 알림을 보내는 flow를 생성합니다."
+          "prompt": "웹사이트 API 응답을 확인하고 상태 코드가 성공적이지 않을 때 Microsoft Teams 알림을 보내는 flow를 생성합니다."
         },
         "buildDockerImageAndRunIt": {
           "label": "Docker 이미지를 빌드하고 실행하기",
-          "prompt": "인라인 Dockerfile에서 Docker 이미지를 빌드하고 결과 컨테이너를 실행하는 Kestra flow를 생성합니다."
+          "prompt": "인라인 Dockerfile에서 Docker 이미지를 빌드하고 결과 컨테이너를 실행하는 FlowAI Studio flow를 생성합니다."
         },
         "manualApproval": {
           "label": "수동 승인",
@@ -2197,7 +2197,7 @@
         },
         "scheduledPdfReports": {
           "label": "예약된 PDF 보고서",
-          "prompt": "보고서가 준비되면 PDF 보고서를 다운로드하고 Slack 알림을 보내는 예약된 flow를 생성합니다."
+          "prompt": "보고서가 준비되면 PDF 보고서를 다운로드하고 Microsoft Teams 알림을 보내는 예약된 flow를 생성합니다."
         },
         "weeklySalesKpisToSlack": {
           "label": "주간 판매 KPI를 Slack으로 보내기",

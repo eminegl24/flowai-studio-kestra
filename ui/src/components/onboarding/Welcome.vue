@@ -17,7 +17,7 @@
                     :conversationId="conversationId"
                     namespace="tutorial"
                     :onboarding="true"
-                    :initialPrompt="te(activeExample.promptKey) ? t(activeExample.promptKey) : undefined"
+                    :initialPrompt="t(activeExample.promptKey)"
                     :onboardingExamples="onboardingExamples"
                     :generationType="aiGenerationTypes.FLOW"
                     :selectedFromTag="selectedLabel !== undefined"
@@ -29,7 +29,7 @@
 
                 <div class="mt-2 welcome-copilot-tags">
                     <el-tag
-                        v-for="label in visibleLabels"
+                        v-for="label in labels"
                         :key="label"
                         round
                         :effect="selectedLabel === label ? 'dark' : 'plain'"
@@ -39,19 +39,6 @@
                         {{ t(flowExamples[label].labelKey) }}
                     </el-tag>
 
-                    <el-tag
-                        v-if="labels.length > 5"
-                        round
-                        effect="plain"
-                        type="info"
-                        @click="allLabelsShown = !allLabelsShown"
-                    >
-                        {{
-                            allLabelsShown
-                                ? $t("welcome_copilot.show_less")
-                                : $t("welcome_copilot.show_more")
-                        }}
-                    </el-tag>
                 </div>
 
                 <div class="welcome-help-section">
@@ -97,7 +84,7 @@
     import Utils from "../../utils/utils";
 
     import {useI18n} from "vue-i18n";
-    const {t, te} = useI18n();
+    const {t} = useI18n();
     const route = useRoute();
     const router = useRouter();
 
@@ -114,17 +101,12 @@
         .map((label) => {
             const example = flowExamples[label];
             return {
-                prompt: te(example.promptKey) ? t(example.promptKey) : "",
+                prompt: t(example.promptKey),
                 flow: example.flow,
             };
         })
         .filter((example) => example.prompt.length > 0),
     );
-
-    const allLabelsShown = ref(false);
-    const visibleLabels = computed(() => {
-        return allLabelsShown.value ? labels : labels.slice(0, 5);
-    });
 
     const ONBOARDING_FLOW_PRESET_KEY = "kestra.onboarding.flowPreset";
     const {onboardingResources} = useOnboardingResources();

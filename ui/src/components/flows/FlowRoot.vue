@@ -31,7 +31,6 @@
     import FlowTriggers from "./FlowTriggers.vue";
     import FlowRootTopBar from "./FlowRootTopBar.vue";
     import FlowConcurrency from "./FlowConcurrency.vue";
-    import DemoAuditLogs from "../demo/AuditLogs.vue";
     import {useAuthStore} from "override/stores/auth";
     import {useMiscStore} from "override/stores/misc";
 
@@ -285,17 +284,6 @@
                         component: FlowConcurrency
                     })
                 }
-
-                tabs.push(                    {
-                    name: "auditlogs",
-                    title: this.$t("auditlogs"),
-                    component: DemoAuditLogs,
-                    maximize: true,
-                    props:{
-                        embed: true
-                    },
-                    locked: true
-                });
 
                 return tabs;
             },

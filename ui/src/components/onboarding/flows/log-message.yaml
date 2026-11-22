@@ -1,0 +1,7 @@
+id: hello_flowai
+namespace: tutorial
+
+tasks:
+  - id: write_message
+    type: io.kestra.plugin.core.log.Log
+    message: Hello, FlowAI!

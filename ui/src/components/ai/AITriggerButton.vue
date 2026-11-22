@@ -3,10 +3,13 @@
         <el-button 
             v-if="!opened"
             class="ai-trigger-button" 
-            :icon="AiIcon" 
+            :icon="AiIcon"
+            :circle="iconOnly"
+            :aria-label="iconOnly ? label : undefined"
+            :title="iconOnly ? label : undefined"
             @click="handleClick"
         >
-            {{ label ?? $t("ai.flow.title") }}
+            <template v-if="!iconOnly">{{ label ?? $t("ai.flow.title") }}</template>
         </el-button>
     </div>
 </template>
@@ -16,6 +19,7 @@
 
     interface AITriggerButtonProps {
         label?: string;
+        iconOnly?: boolean;
         show: boolean;
         opened: boolean;
     }
@@ -74,6 +78,13 @@
         font-weight: 700;
         border: none;
         border-radius: 3rem;
+
+        &.is-circle {
+            width: 2.5rem;
+            height: 2.5rem;
+            padding: 0;
+            justify-content: center;
+        }
     }
 }
 

@@ -9,10 +9,13 @@ tasks:
       LOAD httpfs;
       SELECT sum(total) as sum_total, avg(quantity) as avg_quantity FROM read_csv_auto('https://huggingface.co/datasets/kestra/datasets/raw/main/csv/orders.csv');
     fetchType: FETCH
-  - id: send_slack_message
-    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
-    url: https://kestra.io/api/mock
-    messageText: "DuckDB Query Results: Sum of total = {{ outputs.duckdb_query.outputs[0].rows[0].sum_total }}, Average quantity = {{ outputs.duckdb_query.outputs[0].rows[0].avg_quantity }}"
+  - id: send_teams_notification
+    type: io.kestra.plugin.core.http.Request
+    uri: "{{ secret('TEAMS_WEBHOOK_URL') }}"
+    method: POST
+    contentType: application/json
+    body: |
+      {"text": {{ ('DuckDB Query Results: Sum of total = ' ~ outputs.duckdb_query.outputs[0].rows[0].sum_total ~ ', Average quantity = ' ~ outputs.duckdb_query.outputs[0].rows[0].avg_quantity) | toJson }}}
 
 triggers:
   - id: monday_9am_schedule

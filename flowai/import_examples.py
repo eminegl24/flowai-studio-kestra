@@ -1,4 +1,5 @@
 """Import the checked-in exercises while preserving any existing flows."""
+from argparse import ArgumentParser
 from pathlib import Path
 import re
 
@@ -8,11 +9,20 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def main():
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument("--bank", action="store_true", help="Include the optional database lab exercises")
+    args = parser.parse_args()
     admin = sign_in("admin")
     base = "/api/v1/main/flows"
     examples = ROOT / "examples"
     flows = sorted((examples / "flows").glob("*.yml"))
-    flows.append(examples / "bank-etl/connection_check.yml")
+    if args.bank:
+        bank = examples / "bank-etl"
+        flows.extend(bank / name for name in (
+            "connection_check.yml", "postgres_to_oracle_transactions.yml",
+            "postgres_to_oracle_bildirim.yml", "postgres_to_oracle_teshis.yml",
+            "teams_notification.yml",
+        ))
     for path in flows:
         source = path.read_text()
         flow_id = re.search(r"^id: ([\w.-]+)$", source, re.MULTILINE)[1]

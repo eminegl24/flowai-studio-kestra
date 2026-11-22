@@ -1,0 +1,8 @@
+id: read_public_api
+namespace: tutorial
+
+tasks:
+  - id: read_post
+    type: io.kestra.plugin.core.http.Request
+    uri: https://jsonplaceholder.typicode.com/posts/1
+    method: GET

@@ -46,6 +46,13 @@ case "${1:-}" in
     gemini)
         exec python3 flowai/setup.py --gemini
         ;;
+    resend)
+        if [[ $# -ne 3 ]]; then
+            printf '%s\n' 'Usage: flowai/local.sh resend SENDER_EMAIL RECIPIENT_EMAIL' >&2
+            exit 2
+        fi
+        exec python3 flowai/setup.py --resend-from "$2" --resend-to "$3"
+        ;;
     bank)
         find_java
         if [[ ! -f "$backend" ]]; then
@@ -57,13 +64,16 @@ case "${1:-}" in
         python3 flowai/setup.py --bank-lab "$bank/.env"
         "$java" "-Duser.home=$runtime" -jar "$backend" plugins install \
             io.kestra.plugin:plugin-jdbc-postgres:1.15.10 io.kestra.plugin:plugin-jdbc-oracle:1.15.10 \
+            io.kestra.plugin:plugin-script-python:1.18.9 io.kestra.plugin:plugin-resend:1.4.3 \
+            io.kestra.plugin:plugin-prefect:1.4.4 io.kestra.plugin:plugin-jdbc-mariadb:1.15.10 \
+            io.kestra.plugin:plugin-slack:1.4.6 \
             --plugins "$runtime/plugins" --repositories=https://repo.maven.apache.org/maven2
         ;;
     examples)
-        exec "$runtime/venv/bin/python" flowai/import_examples.py
+        exec "$runtime/venv/bin/python" flowai/import_examples.py "${@:2}"
         ;;
     *)
-        printf '%s\n' 'Usage: flowai/local.sh {setup|run|gemini|bank|examples}' >&2
+        printf '%s\n' 'Usage: flowai/local.sh {setup|run|gemini|resend|bank|examples}' >&2
         exit 2
         ;;
 esac

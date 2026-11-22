@@ -10,7 +10,7 @@ import ContextDocs from "../../components/docs/ContextDocs.vue";
 
 import MessageOutline from "vue-material-design-icons/MessageOutline.vue";
 import FileDocument from "vue-material-design-icons/FileDocument.vue";
-import Slack from "vue-material-design-icons/Slack.vue";
+import Teams from "vue-material-design-icons/MicrosoftTeams.vue";
 import Github from "vue-material-design-icons/Github.vue";
 import Calendar from "vue-material-design-icons/Calendar.vue";
 import Star from "vue-material-design-icons/Star.vue";
@@ -46,9 +46,9 @@ export function useContextButtons() {
               },
               help: {
                   title: t("contextBar.help"),
-                  icon: Slack,
+                  icon: Teams,
 
-                  url: "https://kestra.io/slack?utm_source=app&utm_medium=referral&utm_campaign=context-bar",
+                  url: "https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook",
               },
               issue: {
                   title: t("contextBar.issue"),

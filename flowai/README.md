@@ -1,6 +1,8 @@
 # FlowAI Studio development
 
-Open [FlowAI Studio](http://127.0.0.1:18081/ui/) on this Mac. Sign in as `admin`, `operator` or `viewer` using the matching password in the private runtime file at `../../work/flowai-runtime/config.local.json` relative to this repository. A fresh setup uses `flowai/config.local.json` by default. Set `FLOWAI_CONFIG` to use a different path. Use **Studio tools** in the sidebar for Copilot, SAP inventory, audit and AgentHub.
+Follow the [repository setup instructions](../README.md) to build and run your own local copy.
+The launcher stores freshly generated credentials in `.flowai-local/config.local.json` by default.
+Set `FLOWAI_STATE` to use another state directory. **Studio tools** contains the SAP inventory, audit and AgentHub adapter.
 
 FlowAI Studio uses the Vue frontend and Java engine from the Apache-2.0 Kestra 1.3.48 source tag. The gateway provides independent authentication, access policies and Studio tools. The native launcher binds to loopback, stores state in a dedicated directory and protects the engine API on port 18082 with separate credentials. The existing service on port 8080 uses its own process and data.
 
@@ -25,7 +27,7 @@ You can also pass the official `kestra-1.3.48` executable to `--kestra`. Its SHA
 
 Run `FLOWAI_CONFIG=/path/to/config.local.json python3 flowai/setup.py --gemini` to enter a Google Gemini API key at a hidden prompt, then restart FlowAI Studio. The editor and Studio tools use Kestra’s Gemini provider. The default model is `gemini-3.5-flash-lite`; set `gemini.model` in the private configuration to override it. Copilot sends an explicit prompt, displays a draft and checks it against the engine's validation API. The form does not save or run drafts.
 
-**Copilot Sohbet** in Studio tools answers questions about FlowAI and explains pasted Python. It sends the current message and up to six previous turns to Gemini. History stays in the open page and can be reset with **Yeni sohbet**. It has no tools for executing code, inspecting files, or modifying workflows.
+**Copilot Sohbet** answers questions about FlowAI and explains pasted Python. Gemini receives the message, up to six prior turns and, when available, a bounded structural summary of the selected or named flow revision and recognized execution error codes. The gateway keeps raw logs, saved YAML and credentials local. Chat checks draft syntax and engine validation and withholds generated code when no execution test is available. The editor AI Copilot provides reviewable flow drafts.
 
 ## Access and integrations
 

@@ -11,12 +11,22 @@
                 <span class="d-inline-flex title align-items-center">
                     <AiIcon />&nbsp;<span>{{ props.chat ? "Copilot Sohbet" : $t("ai.flow.title") }}</span>
                 </span>
-                <el-button
-                    class="ai-close-button"
-                    :icon="Close"
-                    :aria-label="props.chat ? 'Sohbeti kapat' : undefined"
-                    @click.stop="emit('close')"
-                />
+                <div class="d-flex align-items-center gap-2">
+                    <el-button
+                        v-if="props.chat"
+                        text
+                        :icon="Minus"
+                        aria-label="Sohbeti küçült"
+                        title="Sohbeti küçült"
+                        @click="minimizeChat"
+                    />
+                    <el-button
+                        class="ai-close-button"
+                        :icon="Close"
+                        :aria-label="props.chat ? 'Sohbeti kapat' : undefined"
+                        @click.stop="emit('close')"
+                    />
+                </div>
             </div>
         </template>
 
@@ -25,7 +35,7 @@
                 <div class="ai-onboarding-icon">
                     <img
                         src="/favicon-192x192.png"
-                        alt="Kestra"
+                        alt="FlowAI Studio"
                         class="ai-onboarding-logo"
                     >
                 </div>
@@ -161,15 +171,21 @@
 
         <div v-else class="ai-body">
             <div v-if="props.chat" ref="chatLog" class="ai-chat-history" role="log" aria-label="Sohbet mesajları">
-                <p v-if="!chatTurns.length">FlowAI hakkında soru sor veya açıklatmak istediğin Python kodunu yapıştır.</p>
+                <p v-if="!visibleChatTurns.length">FlowAI hakkında soru sor veya açıklatmak istediğin Python kodunu yapıştır.</p>
                 <div
-                    v-for="(turn, index) in chatTurns"
+                    v-for="(turn, index) in visibleChatTurns"
                     :key="index"
                     class="ai-chat-turn"
                     :class="turn.role === 'user' ? 'ai-chat-turn-user' : 'ai-chat-turn-model'"
                 >
                     <strong>{{ turn.role === "user" ? "Sen" : "Copilot" }}</strong>
-                    <p>{{ turn.text }}</p>
+                    <Markdown
+                        v-if="turn.role === 'model'"
+                        :source="chatMarkdown(turn.text)"
+                        :html="false"
+                        :linkify="false"
+                    />
+                    <p v-else>{{ turn.text }}</p>
                 </div>
             </div>
             <template v-if="isListening">
@@ -292,9 +308,12 @@
     import InformationOutline from "vue-material-design-icons/InformationOutline.vue";
     import Close from "vue-material-design-icons/Close.vue";
     import Check from "vue-material-design-icons/Check.vue";
+    import Minus from "vue-material-design-icons/Minus.vue";
     import ArrowUp from "vue-material-design-icons/ArrowUp.vue";
     import Microphone from "vue-material-design-icons/Microphone.vue";
     import AiIcon from "./AiIcon.vue";
+    import Markdown from "../layout/Markdown.vue";
+    import {chatMarkdown} from "../../utils/chatMarkdown";
     import {useAiStore} from "../../stores/ai";
     import {useApiStore} from "../../stores/api";
     import type {InputInstance} from "element-plus";
@@ -311,6 +330,7 @@
 
     const emit = defineEmits<{
         close: [];
+        minimize: [];
         generatedYaml: [string];
         createFlowDirectly: [string];
         onboardingPromptDiverged: [];
@@ -336,9 +356,21 @@
     const error = ref<string | undefined>(undefined);
     const chatTurns = ref<{role: "user" | "model"; text: string}[]>([]);
     const chatLog = ref<HTMLDivElement>();
+    const pendingQuestion = ref("");
+    const visibleChatTurns = computed(() => {
+        return pendingQuestion.value
+            ? [...chatTurns.value, {role: "user", text: pendingQuestion.value}]
+            : chatTurns.value;
+    });
+
+    function minimizeChat() {
+        if (isListening.value) cancelVoice();
+        emit("minimize");
+    }
 
     function resetChat() {
         chatTurns.value = [];
+        pendingQuestion.value = "";
         prompt.value = "";
         error.value = undefined;
         focusPrompt();
@@ -346,6 +378,7 @@
 
     async function submitChat() {
         const question = prompt.value.trim();
+        pendingQuestion.value = question;
         waitingForReply.value = true;
         try {
             const history = chatTurns.value.slice(-12).map(turn => ({...turn, text: turn.text.slice(0, 8000)}));
@@ -361,14 +394,14 @@
             }
             const {reply} = await response.json();
             chatTurns.value.push({role: "user", text: question}, {role: "model", text: reply});
+            pendingQuestion.value = "";
             prompt.value = "";
-            await nextTick();
-            if (chatLog.value) chatLog.value.scrollTop = chatLog.value.scrollHeight;
         } catch (cause) {
             error.value = cause instanceof Error ? cause.message : "Yanıt alınamadı.";
         } finally {
             waitingForReply.value = false;
             await nextTick();
+            if (chatLog.value) chatLog.value.scrollTop = chatLog.value.scrollHeight;
             focusPrompt();
         }
     }
@@ -782,6 +815,7 @@
 
 .ai-chat-turn {
     flex: none;
+    min-width: 0;
     max-width: 88%;
     padding: .625rem .875rem;
     border-radius: .9rem;

@@ -93,18 +93,59 @@ class ConnectorTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(kwargs["headers"], {"x-goog-api-key": "test-key"})
             body = kwargs["json"]
             self.assertNotIn("tools", body)
+            context = body["systemInstruction"]["parts"][0]["text"]
+            for fact in ("transaction_type = 'PAYMENT'", "transaction_id PK", "account_id FK",
+                         "127.0.0.1:15432", "127.0.0.1:11521/FREEPDB1",
+                         "BANK_PG_PASSWORD", "idempotent Oracle MERGE", "not a live database inspection",
+                         "Markdown fenced code block marked yaml", "io.kestra.plugin.scripts.python.Script",
+                         "io.kestra.plugin.core.runner.Process", "do not call init_oracle_client",
+                         "trigger.state", "states: [SUCCESS, FAILED]"):
+                self.assertIn(fact, context)
+            self.assertIn("Python script", body["contents"][-1]["parts"][0]["text"])
             self.assertEqual([turn["role"] for turn in body["contents"]], ["user", "model", "user"])
             return {"candidates": [{"content": {"parts": [
                 {"thought": True, "text": "discard"}, {"text": "Outputs görev çıktılarıdır."}]}}]}
 
         with patch.object(service, "remote_json", generate):
             response = await self.client.post("/studio/chat", headers=headers,
-                                              json={"prompt": "Outputs ile farkı ne?", "history": history})
+                                              json={"prompt": "Postgre transaction payment kayıtlarını Oracle’a atacak Python script oluştur",
+                                                    "history": history})
             self.assertEqual(response.status, 200)
             self.assertEqual(await response.json(), {"reply": "Outputs görev çıktılarıdır."})
             invalid = await self.client.post("/studio/chat", headers=headers,
                                              json={"prompt": "Merhaba", "history": history[:1]})
             self.assertEqual(invalid.status, 400)
+
+    async def test_named_flow_uses_the_execution_revision(self):
+        async def engine(_, method, url, **kwargs):
+            self.assertEqual(method, "GET")
+            if url.endswith("/flows/egitim.banka/transfer"):
+                if kwargs["params"].get("revision") == "2":
+                    return {"revision": 2, "source": (
+                        "tasks:\n  - id: transfer\n    type: test.Query\n"
+                        "    sql: SELECT * FROM transactions WHERE transaction_type = 'PAYMENT'\n"
+                        "    password: private-password\n")}
+                return {"revision": 3, "source": "tasks: []"}
+            if url.endswith("/executions/search"):
+                return {"results": [{"namespace": "egitim.banka", "flowId": "transfer", "id": "run1",
+                                     "flowRevision": 2, "state": {"current": "FAILED"}}]}
+            self.assertTrue(url.endswith("/logs/run1"))
+            return [{"message": "ORA-02291 private-log"}]
+
+        with patch.object(service, "remote_json", engine), patch.object(service, "engine_auth"):
+            context = await service.chat_run_context(
+                None, {}, "http://localhost/ui/main/flows/new", "egitim.banka.transfer akışını izle")
+        data = json.loads(context)
+        self.assertEqual((data["currentRevision"], data["sourceRevision"]), (3, 2))
+        self.assertEqual(data["errorCodes"], ["ORA-02291"])
+        self.assertTrue(data["flowStructure"]["tasks"][0]["explicitPaymentPredicate"])
+        self.assertNotIn("private-", context)
+
+    async def test_chat_reports_yaml_location_without_releasing_code(self):
+        draft = chr(96) * 3 + "yaml\nid: test\nnamespace: [\n" + chr(96) * 3
+        reply = await service.check_chat_draft(None, {}, draft)
+        self.assertIn("YAML doğrulaması (satır", reply)
+        self.assertNotIn("namespace: [", reply)
 
     async def test_gemini_draft_via_kestra(self):
         draft = "id: hello\nnamespace: examples\n"

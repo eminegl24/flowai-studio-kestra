@@ -20,9 +20,13 @@ state.mkdir(mode=0o700, parents=True, exist_ok=True)
 config_path = Path(os.environ.get("FLOWAI_CONFIG", ROOT / "config.local.json")).resolve()
 config = json.loads(config_path.read_text())
 engine_account = config["engine_account"]
+gateway_port = int(os.environ.get("FLOWAI_PORT", "18081"))
+engine_port = int(os.environ.get("FLOWAI_ENGINE_PORT", "18082"))
+if not (0 < gateway_port <= 65535 and 0 < engine_port <= 65535 and gateway_port != engine_port):
+    parser.error("FlowAI gateway and engine must use different valid TCP ports")
 engine_config = state / "engine.yml"
 engine_settings = {
-    "micronaut": {"server": {"host": "127.0.0.1", "port": 18082}},
+    "micronaut": {"server": {"host": "127.0.0.1", "port": engine_port}},
     "kestra": {
         "tutorial-flows": {"enabled": False},
         "anonymous-usage-report": {"enabled": False},
@@ -63,7 +67,8 @@ if plugins.is_dir():
     engine_env.setdefault("KESTRA_PLUGINS_PATH", str(plugins))
 gateway_env = dict(os.environ, FLOWAI_CONFIG=str(config_path), FLOWAI_DB=str(state / "studio.sqlite3"),
                    FLOWAI_UI=str(ROOT.parent / "webserver/src/main/resources/ui"),
-                   FLOWAI_ENGINE="http://127.0.0.1:18082", FLOWAI_BIND="127.0.0.1", FLOWAI_PORT="18081")
+                   FLOWAI_ENGINE=f"http://127.0.0.1:{engine_port}", FLOWAI_BIND="127.0.0.1",
+                   FLOWAI_PORT=str(gateway_port), FLOWAI_ORIGIN=f"http://127.0.0.1:{gateway_port}")
 with (state / "engine.log").open("a") as engine_log, (state / "studio.log").open("a") as studio_log:
     commands = [
         ([str(args.java.resolve()), "-Xmx2g", "-Duser.home=" + str(state), "-jar",

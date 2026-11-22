@@ -468,7 +468,7 @@
     "execution labels": "Etichette di esecuzione",
     "wrong labels": "Chiave o valore vuoto non sono ammessi nelle etichette",
     "feeds": {
-      "title": "Novità su Kestra"
+      "title": "Novità su FlowAI Studio"
     },
     "delete execution running": "<div class=\"alert alert-warning mt-2 mb-0\">Questa esecuzione è ancora RUNNING, eliminarla non la fermerà.<br />È necessario kill l'esecuzione per fermarla.</div>",
     "restore": "Ripristina",
@@ -489,7 +489,7 @@
     "cancel": "Annulla",
     "errorLogs": "Log degli errori",
     "welcome_page": {
-      "welcome": "Benvenuto in Kestra",
+      "welcome": "Benvenuto in FlowAI Studio",
       "guide": "Hai bisogno di assistenza per eseguire il tuo primo flow?"
     },
     "product_tour": "Tour del prodotto",
@@ -614,10 +614,10 @@
     "log expand setting": "Visualizzazione predefinita del Log",
     "environment name setting": "Nome dell'ambiente",
     "environment color setting": "Colore dell'ambiente",
-    "slack support": "Fai qualsiasi domanda via Slack",
+    "slack support": "Fai qualsiasi domanda via Microsoft Teams",
     "join community": "Unisciti alla Community",
-    "join_slack": "Unisciti a Slack",
-    "kestra": "Kestra",
+    "join_slack": "Microsoft Teams",
+    "kestra": "FlowAI Studio",
     "reach us": "Parlaci",
     "new version": "Nuova versione {version} disponibile!",
     "error detected": "Errore(i) rilevato(i).",
@@ -807,7 +807,7 @@
       "menu": "Benvenuto",
       "tour": {
         "title": "Fai un tour del prodotto",
-        "text": "Scegli il tuo caso d'uso e segui una guida passo-passo per imparare le funzionalità e le capacità di Kestra. ❤️"
+        "text": "Scegli il tuo caso d'uso e segui una guida passo-passo per imparare le funzionalità e le capacità di FlowAI Studio. ❤️"
       },
       "tutorial": {
         "title": "Tutorial",
@@ -815,7 +815,7 @@
       },
       "help": {
         "title": "Hai bisogno di aiuto?",
-        "text": "Fai qualsiasi domanda nella nostra community su Slack. Se sei bloccato, siamo qui per aiutarti. ✋"
+        "text": "Fai qualsiasi domanda nella nostra community su Microsoft Teams. Se sei bloccato, siamo qui per aiutarti. ✋"
       }
     },
     "pluginPage": {
@@ -859,7 +859,7 @@
             "chart_color_scheme": {
               "label": "Schema Colori Grafico",
               "classic": "Classico",
-              "kestra": "Kestra"
+              "kestra": "FlowAI Studio"
             }
           }
         },
@@ -900,15 +900,15 @@
           "intro": "Per creare un nuovo Secret:",
           "first": "Codifica il <a href=\"https://kestra.io/docs/how-to-guides/secrets?utm_source=app&utm_medium=referral&utm_campaign=secrets-inlinedoc#using-secrets-in-kestra\" target=\"_blank\">valore segreto in Base64</a>",
           "second": "Aggiungi una variabile di ambiente chiamata '<strong>SECRET_{'{MY_SECRET_KEY}'}</strong>' con il valore sopra indicato",
-          "third": "Riavvia la tua istanza di Kestra"
+          "third": "Riavvia la tua istanza di FlowAI Studio"
         }
       },
       "apps": {
-        "title": "Crea App personalizzate con Kestra",
-        "message": "Le app nella Kestra Enterprise Edition ti consentono di creare interfacce utente personalizzate che interagiscono con i workflow di Kestra al di fuori della piattaforma. Questa funzionalità ti permette di utilizzare i tuoi workflow come backend per applicazioni personalizzate, consentendo agli utenti non tecnici di inviare dati tramite moduli o riprendere workflow PAUSED in attesa di approvazione.",
+        "title": "Crea App personalizzate con FlowAI Studio",
+        "message": "Le app nella Enterprise Edition ti consentono di creare interfacce utente personalizzate che interagiscono con i workflow di FlowAI Studio al di fuori della piattaforma. Questa funzionalità ti permette di utilizzare i tuoi workflow come backend per applicazioni personalizzate, consentendo agli utenti non tecnici di inviare dati tramite moduli o riprendere workflow PAUSED in attesa di approvazione.",
         "blueprints": {
           "title": "Inizia da un blueprint di app.",
-          "message": "I blueprint delle app sono app predefinite per casi d'uso comuni come moduli, approvazioni e invio di dati. Con Kestra Enterprise Edition, puoi usare qualsiasi blueprint come punto di partenza e adattarlo per creare UI personalizzate sui tuoi workflow."
+          "message": "I blueprint delle app sono app predefinite per casi d'uso comuni come moduli, approvazioni e invio di dati. Con Enterprise Edition, puoi usare qualsiasi blueprint come punto di partenza e adattarlo per creare UI personalizzate sui tuoi workflow."
         }
       },
       "tests": {
@@ -925,52 +925,52 @@
       },
       "IAM": {
         "title": "Gestisci gli utenti tramite IAM con SSO, SCIM e RBAC",
-        "message": "Kestra Enterprise Edition ha funzionalità IAM integrate con single sign-on (SSO), sincronizzazione della directory SCIM e controllo degli accessi basato sui ruoli (RBAC), integrandosi con diversi provider di identità e permettendo di assegnare permessi dettagliati per utenti e account di servizio."
+        "message": "Enterprise Edition ha funzionalità IAM integrate con single sign-on (SSO), sincronizzazione della directory SCIM e controllo degli accessi basato sui ruoli (RBAC), integrandosi con diversi provider di identità e permettendo di assegnare permessi dettagliati per utenti e account di servizio."
       },
       "tenants": {
         "title": "Gestisci i flussi di lavoro in tenant isolati",
-        "message": "L'edizione Enterprise di Kestra supporta il multi-tenancy, offrendo ambienti completamente isolati per diversi team o progetti, ciascuno con le proprie risorse come gruppi di worker dedicati o segreti e backend di archiviazione interna."
+        "message": "L'edizione Enterprise di FlowAI Studio supporta il multi-tenancy, offrendo ambienti completamente isolati per diversi team o progetti, ciascuno con le proprie risorse come gruppi di worker dedicati o segreti e backend di archiviazione interna."
       },
       "audit-logs": {
         "title": "Traccia le modifiche con i Log di Audit",
-        "message": "Kestra Enterprise Edition registra ogni attività con record robusti e immutabili, rendendo facile tracciare le modifiche, mantenere la conformità e risolvere i problemi."
+        "message": "Enterprise Edition registra ogni attività con record robusti e immutabili, rendendo facile tracciare le modifiche, mantenere la conformità e risolvere i problemi."
       },
       "instance": {
         "title": "Gestisci l'Infrastruttura nella Tua Istanza",
-        "message": "Kestra Enterprise Edition fornisce un dashboard operativo per aiutarti a osservare la salute della tua piattaforma e monitorare le metriche di uptime di tutti i servizi come, ad esempio, Workers, Schedulers e Executors. Dalla stessa pagina, puoi anche creare Annunci per notificare ai tuoi utenti il downtime pianificato e puoi entrare in una modalità di manutenzione che mette temporaneamente tutti i servizi e le esecuzioni dei workflow in uno stato di PAUSED per eseguire un aggiornamento."
+        "message": "Enterprise Edition fornisce un dashboard operativo per aiutarti a osservare la salute della tua piattaforma e monitorare le metriche di uptime di tutti i servizi come, ad esempio, Workers, Schedulers e Executors. Dalla stessa pagina, puoi anche creare Annunci per notificare ai tuoi utenti il downtime pianificato e puoi entrare in una modalità di manutenzione che mette temporaneamente tutti i servizi e le esecuzioni dei workflow in uno stato di PAUSED per eseguire un aggiornamento."
       },
       "blueprints": {
         "title": "Aggiungi Blueprint Personalizzati",
-        "message": "Nella Kestra Enterprise Edition, puoi creare blueprint personalizzati disponibili solo per la tua organizzazione. Puoi usarli come modelli di best-practice per condividere, centralizzare e documentare i flussi di lavoro comunemente utilizzati nel tuo team."
+        "message": "Nella Enterprise Edition, puoi creare blueprint personalizzati disponibili solo per la tua organizzazione. Puoi usarli come modelli di best-practice per condividere, centralizzare e documentare i flussi di lavoro comunemente utilizzati nel tuo team."
       },
       "namespace": {
         "edit": {
           "title": "Aggiorna la Gestione del tuo Namespace",
-          "message": "Nella Kestra Enterprise Edition, i namespace forniscono un'isolamento avanzato e una governance dei segreti, delle variabili e dei plugin defaults su larga scala. Gli amministratori possono configurare gestori di segreti personalizzati, backend di storage isolati, gruppi di worker dedicati e permessi dettagliati su base per-namespace. Questo assicura che i segreti, le variabili e le configurazioni dei plugin rimangano sicuri e facili da gestire tra diversi team e progetti."
+          "message": "Nella Enterprise Edition, i namespace forniscono un'isolamento avanzato e una governance dei segreti, delle variabili e dei plugin defaults su larga scala. Gli amministratori possono configurare gestori di segreti personalizzati, backend di storage isolati, gruppi di worker dedicati e permessi dettagliati su base per-namespace. Questo assicura che i segreti, le variabili e le configurazioni dei plugin rimangano sicuri e facili da gestire tra diversi team e progetti."
         },
         "secrets": {
           "title": "Gestisci i Segreti in Modo Sicuro",
-          "message": "Nella Kestra Enterprise Edition, puoi memorizzare e controllare i segreti a livello di namespace, riducendo al minimo il rischio e garantendo che le credenziali di ciascun team rimangano isolate. Grazie alla gerarchia nidificata, puoi anche configurare le credenziali in un namespace genitore e queste verranno ereditate da tutti i namespace figli. Il supporto per gestori di segreti dedicati e impostazioni di autorizzazione a livello di namespace dettagliate rafforza ulteriormente la sicurezza e la conformità."
+          "message": "Nella Enterprise Edition, puoi memorizzare e controllare i segreti a livello di namespace, riducendo al minimo il rischio e garantendo che le credenziali di ciascun team rimangano isolate. Grazie alla gerarchia nidificata, puoi anche configurare le credenziali in un namespace genitore e queste verranno ereditate da tutti i namespace figli. Il supporto per gestori di segreti dedicati e impostazioni di autorizzazione a livello di namespace dettagliate rafforza ulteriormente la sicurezza e la conformità."
         },
         "assets": {
           "title": "Centralizza la gestione delle risorse",
-          "message": "Nella Kestra Enterprise Edition, Assets mantiene un inventario aggiornato delle risorse con cui i tuoi workflow interagiscono. Queste risorse possono essere tabelle di database, macchine virtuali, file o qualsiasi sistema esterno con cui lavori."
+          "message": "Nella Enterprise Edition, Assets mantiene un inventario aggiornato delle risorse con cui i tuoi workflow interagiscono. Queste risorse possono essere tabelle di database, macchine virtuali, file o qualsiasi sistema esterno con cui lavori."
         },
         "variables": {
           "title": "Governa Centralmente le Tue Variabili",
-          "message": "Nella Kestra Enterprise Edition, puoi definire e gestire variabili a livello di namespace per eliminare configurazioni ripetitive tra i flow. Queste variabili assicurano coerenza, semplificano gli aggiornamenti di configurazione e possono essere facilmente riferite da qualsiasi task o trigger per flussi di lavoro più puliti e manutenibili."
+          "message": "Nella Enterprise Edition, puoi definire e gestire variabili a livello di namespace per eliminare configurazioni ripetitive tra i flow. Queste variabili assicurano coerenza, semplificano gli aggiornamenti di configurazione e possono essere facilmente riferite da qualsiasi task o trigger per flussi di lavoro più puliti e manutenibili."
         },
         "plugin-defaults": {
           "title": "Standardizza la Configurazione con i Valori Predefiniti del Plugin",
-          "message": "Nella Kestra Enterprise Edition, puoi impostare i plugin predefiniti specifici per namespace, riducendo la necessità di configurazioni duplicate in ogni flow. Questa governance centrale dei plugin impone configurazioni coerenti, consente il riferimento sicuro a segreti o variabili e semplifica la manutenzione dei tuoi workflow."
+          "message": "Nella Enterprise Edition, puoi impostare i plugin predefiniti specifici per namespace, riducendo la necessità di configurazioni duplicate in ogni flow. Questa governance centrale dei plugin impone configurazioni coerenti, consente il riferimento sicuro a segreti o variabili e semplifica la manutenzione dei tuoi workflow."
         },
         "history": {
           "title": "Gestisci la Cronologia delle Revisioni in un Unico Luogo",
-          "message": "Nella Kestra Enterprise Edition, puoi gestire la cronologia delle revisioni dei tuoi namespace"
+          "message": "Nella Enterprise Edition, puoi gestire la cronologia delle revisioni dei tuoi namespace"
         },
         "audit-logs": {
           "title": "Tieni traccia di tutte le modifiche in un unico posto",
-          "message": "Nella Kestra Enterprise Edition, puoi visualizzare i log di audit a livello di namespace con differenze dettagliate, offrendoti una chiara cronologia di chi ha modificato cosa e quando su tutte le risorse."
+          "message": "Nella Enterprise Edition, puoi visualizzare i log di audit a livello di namespace con differenze dettagliate, offrendoti una chiara cronologia di chi ha modificato cosa e quando su tutte le risorse."
         }
       }
     },
@@ -991,12 +991,12 @@
         "docs": "Documentazione",
         "tutorial": "Tutorial",
         "blueprints": "Blueprint",
-        "slack": "Community Slack"
+        "slack": "Community Microsoft Teams"
       },
       "steps": {
         "flow_basics": {
           "title": "Nozioni di base sul Flow",
-          "description": "In Kestra, un <code>flow</code> è l'unità di orchestrazione principale. Lo definisci in YAML con metadati e Task ordinati.<br><br>Rivedi la struttura di esempio qui sotto, quindi continua a costruirla passo dopo passo."
+          "description": "In FlowAI Studio, un <code>flow</code> è l'unità di orchestrazione principale. Lo definisci in YAML con metadati e Task ordinati.<br><br>Rivedi la struttura di esempio qui sotto, quindi continua a costruirla passo dopo passo."
         },
         "add_id": {
           "title": "Aggiungi ID Flow",
@@ -1012,7 +1012,7 @@
         },
         "add_log_task": {
           "title": "Aggiungi il primo task",
-          "description": "I Task sono le unità di lavoro che il tuo Flow esegue, definite come un elenco ordinato di passaggi. Ogni Task necessita di un <code>id</code> e di un <code>type</code> univoci. Kestra fornisce molti plugin di Task per sistemi esterni; qui usiamo un Task Python Script.<br><br>La sintassi <code>&#123;&#123; ... &#125;&#125;</code> è un'espressione Pebble, utilizzata per fare riferimento a variabili dinamicamente in fase di esecuzione, come <code>&#123;&#123; inputs.name &#125;&#125;</code> dai tuoi input del Flow.<br><br>Ora aggiungi il primo Task sotto <code>tasks</code> con <code>id</code>, <code>type</code> e uno <code>script</code> che stampa un saluto."
+          "description": "I Task sono le unità di lavoro che il tuo Flow esegue, definite come un elenco ordinato di passaggi. Ogni Task necessita di un <code>id</code> e di un <code>type</code> univoci. FlowAI Studio fornisce molti plugin di Task per sistemi esterni; qui usiamo un Task Python Script.<br><br>La sintassi <code>&#123;&#123; ... &#125;&#125;</code> è un'espressione Pebble, utilizzata per fare riferimento a variabili dinamicamente in fase di esecuzione, come <code>&#123;&#123; inputs.name &#125;&#125;</code> dai tuoi input del Flow.<br><br>Ora aggiungi il primo Task sotto <code>tasks</code> con <code>id</code>, <code>type</code> e uno <code>script</code> che stampa un saluto."
         },
         "save_flow": {
           "title": "Salva Flow",
@@ -1100,7 +1100,7 @@
         "add_cron_trigger_cron": "Aggiungi un'espressione cron, ad esempio: `\"*/5 * * * *\"`.",
         "add_input_default_section": "Torna a `inputs` e mantieni un input esistente chiamato `name` (non aggiungere un secondo input).",
         "add_input_default_id": "Mantieni l'ID input esistente come `name`.",
-        "add_input_default_defaults": "Aggiungi un valore predefinito per `name`, ad esempio: `defaults: \"Kestra\"`.",
+        "add_input_default_defaults": "Aggiungi un valore predefinito per `name`, ad esempio: `defaults: \"FlowAI Studio\"`.",
         "save_flow_again": "Clicca di nuovo su Salva per continuare."
       }
     },
@@ -1251,7 +1251,7 @@
     "execution_guide": {
       "get_started": {
         "title": "Inizia ⚡",
-        "text": "Segui la Guida rapida per installare Kestra e iniziare a creare i tuoi primi workflow."
+        "text": "Segui la Guida rapida per installare FlowAI Studio e iniziare a creare i tuoi primi workflow."
       },
       "namespaces": {
         "title": "Informazioni sui Namespace",
@@ -1259,7 +1259,7 @@
       },
       "workflow_components": {
         "title": "Componenti del Workflow",
-        "text": "Conosci i principali componenti di orchestrazione di un workflow Kestra."
+        "text": "Conosci i principali componenti di orchestrazione di un workflow FlowAI Studio."
       },
       "videos_tutorials": {
         "title": "Tutorial Video",
@@ -1471,7 +1471,7 @@
       "loading_execution": "Si è verificato un errore durante il caricamento dell'esecuzione",
       "connection_lost": {
         "title": "Connessione interrotta",
-        "message": "Non siamo riusciti a raggiungere la tua istanza di Kestra. Assicurati che sia in esecuzione, quindi aggiorna la pagina."
+        "message": "Non siamo riusciti a raggiungere la tua istanza di FlowAI Studio. Assicurati che sia in esecuzione, quindi aggiorna la pagina."
       }
     },
     "debug": "Debug",
@@ -1525,7 +1525,7 @@
       },
       "apps": {
         "title": "Non hai ancora app!",
-        "content": "Inizia a creare App per interagire con Kestra dal mondo esterno."
+        "content": "Inizia a creare App per interagire con FlowAI Studio dal mondo esterno."
       },
       "testSuites": {
         "title": "Non hai ancora Test suite!",
@@ -1575,7 +1575,7 @@
       },
       "versionPlugin": {
         "title": "Non hai ancora un plugin versionato!",
-        "content": "Qui puoi gestire tutti i plugin installati sulla tua istanza di Kestra. I plugin appena installati potrebbero non essere immediatamente disponibili in tutti i servizi di Kestra, a seconda della configurazione della tua istanza."
+        "content": "Qui puoi gestire tutti i plugin installati sulla tua istanza di FlowAI Studio. I plugin appena installati potrebbero non essere immediatamente disponibili in tutti i servizi di FlowAI Studio, a seconda della configurazione della tua istanza."
       },
       "panels": {
         "title": "Nessun pannello è attualmente aperto.",
@@ -1648,11 +1648,11 @@
         "user": "Crea utente admin",
         "config": "Convalida Configurazione",
         "survey": "Dicci di più",
-        "complete": "Avvia Kestra UI"
+        "complete": "Avvia FlowAI Studio UI"
       },
       "titles": {
         "user": "Crea un utente admin",
-        "survey": "Aiutaci a migliorare Kestra OSS"
+        "survey": "Aiutaci a migliorare FlowAI Studio OSS"
       },
       "subtitles": {
         "user": "Proteggi la tua istanza per iniziare.",
@@ -1691,7 +1691,7 @@
       },
       "survey": {
         "skip": "Salta",
-        "company_size": "Qual è il tuo obiettivo principale con Kestra?",
+        "company_size": "Qual è il tuo obiettivo principale con FlowAI Studio?",
         "company_1_10": "Apprendimento / esplorazione",
         "company_11_50": "Progetto personale",
         "company_50_250": "Valutazione per il mio team/azienda",
@@ -1717,7 +1717,7 @@
       "flow": {
         "select_provider": "Seleziona un provider",
         "title": "Agente AI",
-        "prompt_placeholder": "Inserisci le istruzioni per creare il tuo flow di Kestra. Esempio di prompt: Crea un flow che si esegue ogni lunedì alle 9 AM.",
+        "prompt_placeholder": "Inserisci le istruzioni per creare il tuo flow di FlowAI Studio. Esempio di prompt: Crea un flow che si esegue ogni lunedì alle 9 AM.",
         "generating": {
           "flow": "Generazione del Flow YAML per te...",
           "dashboard": "Generazione del Dashboard YAML per te...",
@@ -1725,8 +1725,8 @@
           "test": "Generazione del Test YAML per te..."
         },
         "enable_instructions": {
-          "header": "<b>AI Copilot non è stato ancora configurato.</b>\n\nPer abilitare AI Copilot, aggiungi il seguente snippet al file di configurazione della tua istanza di Kestra (ad esempio <code>application.yml</code>), sostituendo <code>geminiApiKey</code> con la tua chiave effettiva:",
-          "footer": "Nota: Al momento, solo Gemini è supportato come provider AI per l'Open Source Edition. Per l'Enterprise Edition, fare riferimento alla documentazione di AI Copilot per la configurazione di altri provider di modelli.\n\nRiavvia la tua istanza di Kestra dopo aver salvato la configurazione."
+          "header": "<b>AI Copilot non è stato ancora configurato.</b>\n\nPer abilitare AI Copilot, aggiungi il seguente snippet al file di configurazione della tua istanza di FlowAI Studio (ad esempio <code>application.yml</code>), sostituendo <code>geminiApiKey</code> con la tua chiave effettiva:",
+          "footer": "Nota: Al momento, solo Gemini è supportato come provider AI per l'Open Source Edition. Per l'Enterprise Edition, fare riferimento alla documentazione di AI Copilot per la configurazione di altri provider di modelli.\n\nRiavvia la tua istanza di FlowAI Studio dopo aver salvato la configurazione."
         }
       },
       "dashboard": {
@@ -2117,25 +2117,25 @@
       },
       "success_popup": {
         "title": "Congratulazioni!",
-        "description": "Hai eseguito con successo il tuo primo flow! Sei sulla buona strada per diventare un esperto di Kestra.",
+        "description": "Hai eseguito con successo il tuo primo flow! Sei sulla buona strada per diventare un esperto di FlowAI Studio.",
         "tutorial": "Tutorial Approfondito",
         "explore": "Esplora di più"
       },
       "success_page": {
         "title": "Tutto pronto!",
-        "description": "Hai appreso le basi di Kestra. Ecco alcune risorse per aiutarti a continuare il tuo percorso.",
+        "description": "Hai appreso le basi di FlowAI Studio. Ecco alcune risorse per aiutarti a continuare il tuo percorso.",
         "restart": "Riavvia Tutorial",
         "items": {
           "tutorial": {
             "title": "Avvia un Tutorial",
-            "description": "Guida interattiva a tutte le funzionalità di Kestra"
+            "description": "Guida interattiva a tutte le funzionalità di FlowAI Studio"
           },
           "blueprints": {
             "title": "Blueprints",
             "description": "Template di workflow predefiniti per casi d'uso comuni"
           },
           "slack": {
-            "title": "Comunità Slack",
+            "title": "Comunità Microsoft Teams",
             "description": "Connettiti con altri utenti e ricevi aiuto dalla community"
           },
           "videos": {
@@ -2144,7 +2144,7 @@
           },
           "demo": {
             "title": "Ottieni una Demo",
-            "description": "Esplora Kestra Enterprise Edition con una demo personalizzata"
+            "description": "Esplora Enterprise Edition con una demo personalizzata"
           }
         }
       },
@@ -2158,7 +2158,7 @@
           "description": "Esplora esempi e modelli pronti all'uso per schemi di workflow comuni."
         },
         "slack": {
-          "title": "Comunità Slack",
+          "title": "Comunità Microsoft Teams",
           "description": "Unisciti a noi per condividere idee e best practice e ottenere aiuto con domande tecniche."
         }
       },
@@ -2169,11 +2169,11 @@
         },
         "installNginxViaAnsible": {
           "label": "Installa Nginx tramite Ansible",
-          "prompt": "Crea un flow di Kestra che installa Nginx su una macchina di destinazione con Ansible e verifica la versione installata."
+          "prompt": "Crea un flow di FlowAI Studio che installa Nginx su una macchina di destinazione con Ansible e verifica la versione installata."
         },
         "buildDbtPipeline": {
           "label": "Crea una pipeline dbt",
-          "prompt": "Crea un flow di Kestra che clona un repository di progetto dbt e esegue dbt build con un profilo DuckDB."
+          "prompt": "Crea un flow di FlowAI Studio che clona un repository di progetto dbt e esegue dbt build con un profilo DuckDB."
         },
         "etlWorkflow": {
           "label": "Flusso di lavoro ETL",
@@ -2181,11 +2181,11 @@
         },
         "microservicesApis": {
           "label": "Microservizi e API",
-          "prompt": "Crea un flow che verifica la risposta dell'API di un sito web e invia un avviso Slack quando il codice di stato non è di successo."
+          "prompt": "Crea un flow che verifica la risposta dell'API di un sito web e invia un avviso Microsoft Teams quando il codice di stato non è di successo."
         },
         "buildDockerImageAndRunIt": {
           "label": "Crea un'immagine Docker ed eseguila",
-          "prompt": "Crea un flow di Kestra che costruisce un'immagine Docker da un Dockerfile inline e esegue il container risultante."
+          "prompt": "Crea un flow di FlowAI Studio che costruisce un'immagine Docker da un Dockerfile inline e esegue il container risultante."
         },
         "manualApproval": {
           "label": "Approvazione manuale",
@@ -2197,11 +2197,11 @@
         },
         "scheduledPdfReports": {
           "label": "Report PDF programmati",
-          "prompt": "Crea un flow programmato che scarica un report PDF e invia una notifica Slack quando il report è pronto."
+          "prompt": "Crea un flow programmato che scarica un report PDF e invia una notifica Microsoft Teams quando il report è pronto."
         },
         "weeklySalesKpisToSlack": {
-          "label": "KPI di Vendite Settimanali su Slack",
-          "prompt": "Crea un flow programmato settimanalmente che calcola i KPI delle vendite con DuckDB e pubblica il riepilogo su Slack."
+          "label": "KPI di Vendite Settimanali su Microsoft Teams",
+          "prompt": "Crea un flow programmato settimanalmente che calcola i KPI delle vendite con DuckDB e pubblica il riepilogo su Microsoft Teams."
         }
       }
     },
