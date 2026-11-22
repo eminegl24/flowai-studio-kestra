@@ -89,7 +89,7 @@ dependencies {
         api "org.apache.kafka:kafka-clients:$kafkaVersion"
         api "org.apache.kafka:kafka-streams:$kafkaVersion"
         // langchain4j 1.11.0 brings opennlp-tools 2.5.4: CVE-2026-40682 (XXE), CVE-2026-42027 (class loading via model manifest), CVE-2026-42440, fixed in 2.5.9
-        api "org.apache.opennlp:opennlp-tools:2.5.9"
+        api "org.apache.opennlp:opennlp-tools:3.0.0"
         // AWS CRT is not included in the AWS BOM but needed for the S3 Transfer manager
         api 'software.amazon.awssdk.crt:aws-crt:0.43.4'
 
