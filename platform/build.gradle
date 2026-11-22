@@ -94,7 +94,7 @@ dependencies {
         api 'software.amazon.awssdk.crt:aws-crt:0.43.4'
 
         // Other libs
-        api("org.projectlombok:lombok:1.18.42")
+        api("org.projectlombok:lombok:1.18.48")
         api("org.codehaus.janino:janino:3.1.12")
         api group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.25.5'
         api group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.25.5' // CVE-2026-49844 (SEC-2255)
