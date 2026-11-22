@@ -32,7 +32,7 @@ dependencies {
     api enforcedPlatform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
     api enforcedPlatform("org.slf4j:slf4j-api:$slf4jVersion")
     api enforcedPlatform("org.eclipse.jetty:jetty-bom:$jettyVersion")
-    api platform("io.micronaut.platform:micronaut-platform:4.10.22")
+    api platform("io.micronaut.platform:micronaut-platform:5.2.7")
     // security tower (Trivy): Micronaut 4.10's tracing imports opentelemetry-bom 1.54.1, opentelemetry-api < 1.62.0 has
     // CVE-2026-45292 (SEC-0387). 1.62.0 is the highest version Micronaut 4.10 runs on: its opentelemetry-instrumentation 2.20.1
     // calls io.opentelemetry.api.internal.InstrumentationUtil (gone in 1.63), and the instrumentation releases that stopped
